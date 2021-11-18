@@ -1,0 +1,26 @@
+export const BASE_URL = 'http://cssellapi.ikaart.org';
+
+export const API = {
+  REGISTRATION_API: '/token',
+  LOGIN_API: '/token',
+  FORGOT_PASSWORD: '/api/cssell/ForGotPassword',
+  RESET_PASSWORD: '/api/cssell/ChangePasswordByEmail',
+  GET_USER_MASTER_DATA: '/api/cssell/GetUserMasterData',
+  UPDATE_USER_MASTER_DATA: '/api/cssell/AddUserMasterData',
+  STORE_IMAGE_API: '/api/cssell/AddUserMasterData',
+  ADD_PROFILE: '/api/cssell/AddUserMasterData',
+  GET_PROFILES: '/api/cssell/GetUserMasterData',
+  UPDATE_PROFILE: '/api/cssell/AddUserMasterData',
+  GET_LOCATION: '/api/cssell/GetLocationMaster',
+  ACTIVE_PROFILE: '/api/cssell/AddUserMasterData',
+  DELETE_PROFILE: '/api/cssell/AddUserMasterData',
+  CREATE_BIN: '/api/cssell/CreateUpdateBinMaster',
+  UPDATE_BIN: '/api/cssell/CreateUpdateBinMaster',
+  GET_BIN: '/api/cssell/GetBinMaster',
+  UPLOAD_IMAGE: '/api/cssell/UploadImages',
+  GET_PRODUCTS: '/api/cssell/GetProduct',
+  UPLOAD_QR_IMAGE: '/api/cssell/UploadQRImages',
+  ADD_UPDATE_PRODUCT: '/api/cssell/CreateUpdateProduct',
+  GET_CATEGORY_MASTER: '/api/cssell/GetCategoryMaster',
+  GET_SUBCATEGORY_MASTER: '/api/cssell/GetSubCategoryMaster',
+};

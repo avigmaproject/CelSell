@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "952678901123",
+    "project_id": "celsell-4b86d",
+    "storage_bucket": "celsell-4b86d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952678901123:android:3b298c41316c27a74c82b6",
+        "android_client_info": {
+          "package_name": "com.cellsell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "952678901123-345u43pfojrv8qn6errcadtr8d0o4d6l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cellsell",
+            "certificate_hash": "0f868fe81c628afb8df7bb56313912c14824e8e9"
+          }
+        },
+        {
+          "client_id": "952678901123-8jvls4fl5gvmjd0s20l35v9vaqc32mqq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyfpnWL1E9kYoevnNioTLq_tVhOb4qPuA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "952678901123-8jvls4fl5gvmjd0s20l35v9vaqc32mqq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
