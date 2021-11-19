@@ -63,6 +63,10 @@ export default class CreateBin extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
   generateLink = async () => {
     const link = await dynamicLinks().buildShortLink({
       link: `https://cellsell.page.link/CreateUpdateBinMaster/${this.state.binid}`,
@@ -389,7 +393,7 @@ export default class CreateBin extends Component {
               }}>
               {this.state.data.map(item => {
                 return (
-                  <Select.Item label={item.Loc_Name} value={item.Loc_ID} />
+                  <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
                 );
               })}
             </Select>

@@ -49,14 +49,14 @@ export default class EditItem extends Component {
       vendor: '',
       condition: '',
       celebrity: '',
-      newused: null,
+      newused: '',
       clicks: 0,
       show: false,
       getimagepath: '',
       imagepath: [],
       description: '',
       binid: '',
-      price: null,
+      price: '',
       category: [],
       categoryid: '',
       subcategory: [],
@@ -71,6 +71,10 @@ export default class EditItem extends Component {
       this.getToken();
       this.getcategory();
     });
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe;
   }
 
   IncrementItem = () => {
@@ -111,13 +115,18 @@ export default class EditItem extends Component {
         vendor: res[0][0].Pro_Vendor_Name,
         condition: res[0][0].Pro_Condition,
         celebrity: res[0][0].Pro_Celeb_Name,
-        newused: res[0][0].Pro_new_Used,
-        price: res[0][0].Pro_Price,
+        // newused: res[0][0].Pro_new_Used,
+        price: res[0][0].Pro_Price.toString(),
         categoryid: res[0][0].Pro_Category,
         subcategoryid: res[0][0].Pro_SubCategory,
         binid: res[0][0].Pro_Bin_PkeyID,
         loading: false,
       });
+      if (res[0][0].Pro_new_Used === false) {
+        this.setState({newused: 'Used'});
+      } else {
+        this.setState({newused: 'New'});
+      }
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
       this.setState({loading: false});
@@ -162,9 +171,16 @@ export default class EditItem extends Component {
     try {
       let token = await AsyncStorage.getItem('token');
       const res = await getsubcategorymaster(data, token);
-      this.setState({
-        subcategory: res[0],
-      });
+      if (res[0] != undefined) {
+        this.setState({
+          subcategory: res[0],
+        });
+      } else {
+        this.setState({
+          subcategory: [],
+        });
+      }
+
       console.log(res, 'ressss');
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
@@ -188,7 +204,7 @@ export default class EditItem extends Component {
           {
             base64: image.data,
             filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
+              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
             imageflag: true,
             // imagepath: image.path,
           },
@@ -215,7 +231,7 @@ export default class EditItem extends Component {
           {
             base64: image.data,
             filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
+              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
             // imagepath: image.path,
             imageflag: true,
           },
@@ -386,7 +402,8 @@ export default class EditItem extends Component {
   };
 
   render() {
-    console.log(this.state.price, 'Pro_SubCategory');
+    console.log(this.state.price, 'price');
+    console.log(this.state.newused, 'newused');
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: '#F3F2F4'}}>
         <Spinner visible={this.state.loading} />
@@ -526,6 +543,7 @@ export default class EditItem extends Component {
                 backgroundColor: '#fff',
               }}
               selectedValue={this.state.newused}
+              value={this.state.newused}
               width="90%"
               placeholder="New/Used"
               onValueChange={itemValue => this.setState({newused: itemValue})}
@@ -607,7 +625,9 @@ export default class EditItem extends Component {
                       <View>
                         <Image
                           source={{
-                            uri: image.ProImage_ImagePath,
+                            uri: image.ProImage_ImagePath
+                              ? image.ProImage_ImagePath
+                              : null,
                           }}
                           // resizeMode="contain"
                           style={{
@@ -623,7 +643,9 @@ export default class EditItem extends Component {
                   <View>
                     <Image
                       source={{
-                        uri: this.state.getimagepath,
+                        uri: this.state.getimagepath
+                          ? this.state.getimagepath
+                          : null,
                       }}
                       // resizeMode="contain"
                       style={{

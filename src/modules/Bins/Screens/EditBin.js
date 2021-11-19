@@ -59,6 +59,10 @@ export default class EditBin extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
   GetLocation = async () => {
     this.setState({loading: true});
     var data = JSON.stringify({
@@ -321,6 +325,7 @@ export default class EditBin extends Component {
               dropdownIcon
               // isDisabled={editable}
               // variant="unstyled"
+
               style={{
                 fontSize: 14,
                 paddingLeft: 20,
@@ -328,6 +333,7 @@ export default class EditBin extends Component {
                 height: 55,
                 backgroundColor: '#fff',
               }}
+              value={this.state.location}
               selectedValue={this.state.location}
               width="90%"
               placeholder="Select Location"
@@ -337,7 +343,7 @@ export default class EditBin extends Component {
               }}>
               {this.state.data.map(item => {
                 return (
-                  <Select.Item label={item.Loc_Name} value={item.Loc_ID} />
+                  <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
                 );
               })}
             </Select>

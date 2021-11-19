@@ -66,6 +66,10 @@ export default class UpdateProfile extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
   GetImage = async () => {
     this.setState({
       photo: await AsyncStorage.getItem('imagepath'),
@@ -298,7 +302,7 @@ export default class UpdateProfile extends Component {
           {
             base64: image.data,
             filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
+              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
             // imagepath: image.path,
           },
           () => {
@@ -324,7 +328,7 @@ export default class UpdateProfile extends Component {
           {
             base64: image.data,
             filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
+              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
             // imagepath: image.path,
           },
           () => {
@@ -404,7 +408,9 @@ export default class UpdateProfile extends Component {
               bg: 'gray',
             }}>
             {this.state.data.map(item => {
-              return <Select.Item label={item.Loc_Name} value={item.Loc_ID} />;
+              return (
+                <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
+              );
             })}
           </Select>
         </View>

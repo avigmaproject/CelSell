@@ -73,6 +73,10 @@ export default class CreateItem extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
   IncrementItem = () => {
     this.setState({clicks: this.state.clicks + 1});
   };
@@ -103,7 +107,7 @@ export default class CreateItem extends Component {
           {
             base64: image.data,
             filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
+              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
             // imagepath: image.path,
           },
           () => {
@@ -129,7 +133,7 @@ export default class CreateItem extends Component {
           {
             base64: image.data,
             filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
+              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
             // imagepath: image.path,
           },
           () => {
@@ -209,9 +213,15 @@ export default class CreateItem extends Component {
     try {
       let token = await AsyncStorage.getItem('token');
       const res = await getsubcategorymaster(data, token);
-      this.setState({
-        subcategory: res[0],
-      });
+      if (res[0] != undefined) {
+        this.setState({
+          subcategory: res[0],
+        });
+      } else {
+        this.setState({
+          subcategory: [],
+        });
+      }
       console.log(res, 'getsubcategory');
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});

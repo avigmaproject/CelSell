@@ -91,7 +91,12 @@ class HomeScreen extends Component {
             },
             () => this.split_name(),
           );
-          AsyncStorage.setItem('imagepath', res[0][i].User_Image_Path);
+          if (
+            res[0][i].User_Image_Path != null &&
+            res[0][i].User_Image_Path != undefined
+          ) {
+            AsyncStorage.setItem('imagepath', res[0][i].User_Image_Path);
+          }
         }
       }
       const {binownerid} = this.state;

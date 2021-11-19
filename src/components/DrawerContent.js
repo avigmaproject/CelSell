@@ -266,7 +266,7 @@ class DrawerContent extends Component {
             labelStyle={styles.labelStyle}
           />
           <Divider />
-          <DrawerItem
+          {/* <DrawerItem
             icon={() => (
               <SimpleLineIcons name="plus" color="#0F0B56" size={25} />
             )}
@@ -274,7 +274,7 @@ class DrawerContent extends Component {
             onPress={() => this.props.navigation.navigate('CreateBin')}
             labelStyle={styles.labelStyle}
           />
-          <Divider />
+          <Divider /> */}
           <DrawerItem
             icon={() => <Entypo name="export" color="#0F0B56" size={25} />}
             label="Export"

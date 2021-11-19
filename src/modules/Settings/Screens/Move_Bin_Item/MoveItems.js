@@ -40,6 +40,10 @@ export default class MoveItems extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
   GetBins = async token => {
     this.setState({
       loading: true,

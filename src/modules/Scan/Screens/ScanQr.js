@@ -29,6 +29,9 @@ export default class ScanQr extends Component {
     this.setState({
       linkdata: url,
       photo: '',
+      scan: false,
+      ScanResult: false,
+      result: '',
     });
   };
   componentWillUnmount() {
@@ -69,9 +72,27 @@ export default class ScanQr extends Component {
   };
 
   onSuccess = e => {
-    Linking.openURL(e.data).catch(err =>
-      console.error('An error occured', err),
-    );
+    const check = e.data.substring(0, 4);
+    console.log('scanned data' + check);
+    this.setState({
+      result: e,
+      scan: false,
+      ScanResult: true,
+    });
+    if (check === 'http') {
+      Linking.openURL(e.data).catch(err =>
+        console.error('An error occured', err),
+      );
+    } else {
+      this.setState({
+        result: e,
+        scan: false,
+        ScanResult: true,
+      });
+
+      console.log(check, 'resultresult');
+      this.props.navigation.navigate('ItemDetails', {check});
+    }
   };
 
   GetImage = async () => {

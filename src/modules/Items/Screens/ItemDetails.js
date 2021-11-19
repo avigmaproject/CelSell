@@ -41,6 +41,7 @@ export default class ItemDetails extends Component {
       price: '',
       category: '',
       subcategory: '',
+      barcodeimage: '',
     };
   }
 
@@ -48,8 +49,20 @@ export default class ItemDetails extends Component {
     const {navigation} = this.props;
     this._unsubscribe = navigation.addListener('focus', () => {
       this.GetImage();
-      this.getToken();
+      console.log(
+        this.props.route.params.check,
+        'this.props.route.params.check',
+      );
+      if (this.props.route.params.check === undefined) {
+        this.getToken();
+      } else {
+        this.GetProductsWithQr();
+      }
     });
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe;
   }
 
   GetImage = async () => {
@@ -85,12 +98,50 @@ export default class ItemDetails extends Component {
         price: res[0][0].Pro_Price,
         category: res[0][0].Pro_Category,
         subcategory: res[0][0].Pro_SubCategory,
+        barcodeimage: res[0][0].Pro_BarCode_ImagePath,
         loading: false,
       });
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
       this.setState({loading: false});
     }
+  };
+
+  GetProductsWithQr = async () => {
+    this.setState({
+      loading: true,
+    });
+    var data = JSON.stringify({
+      Str_Pro_PkeyID: this.props.route.params.check,
+      Type: 99,
+    });
+    // try {
+    console.log(data, 'data');
+    const token = await AsyncStorage.getItem('token');
+    const res = await getproducts(data, token);
+    console.log(res, 'redsssssssssss');
+    this.setState({
+      description: res[0][0].Pro_Desc,
+      title: res[0][0].Pro_Name,
+      imagepath: res[0][0].ProImage_ImagePath,
+      brand: res[0][0].Pro_BrandName,
+      gender: res[0][0].Pro_Gender,
+      color: res[0][0].Pro_Color,
+      size: res[0][0].Pro_Size,
+      vendor: res[0][0].Pro_Vendor_Name,
+      condition: res[0][0].Pro_Condition,
+      celebrity: res[0][0].Pro_Celeb_Name,
+      newused: res[0][0].Pro_new_Used,
+      price: res[0][0].Pro_Price,
+      category: res[0][0].Pro_Category,
+      subcategory: res[0][0].Pro_SubCategory,
+      barcodeimage: res[0][0].Pro_BarCode_ImagePath,
+      loading: false,
+    });
+    // } catch (error) {
+    //   console.log('hihihihihihih', {e: error.response.data.error});
+    //   this.setState({loading: false});
+    // }
   };
 
   getToken = async () => {
@@ -234,7 +285,7 @@ export default class ItemDetails extends Component {
               resizeMode: 'cover',
             }}
             source={{
-              uri: this.state.imagepath,
+              uri: this.state.imagepath ? this.state.imagepath : null,
             }}
           />
           <View style={{flexDirection: 'row', marginTop: 20, left: 20}}>
@@ -306,6 +357,23 @@ export default class ItemDetails extends Component {
             <Text style={styles.Subheadertext}>Celebrity/Entourage:</Text>
             <Text style={styles.detailtext}>{this.state.celebrity}</Text>
           </View>
+          <View style={{alignItems: 'center'}}>
+            <Text style={styles.Subheadertext}>Scan item’s Barcode </Text>
+          </View>
+          <Image
+            style={{
+              height: 350,
+              width: 175,
+              borderRadius: 2,
+              marginTop: -75,
+              alignSelf: 'center',
+              // resizeMode: 'contain',
+              transform: [{rotate: '270deg'}],
+            }}
+            source={{
+              uri: this.state.barcodeimage ? this.state.barcodeimage : null,
+            }}
+          />
         </ScrollView>
       </SafeAreaView>
     );

@@ -39,6 +39,10 @@ export default class TransferBin extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
   GetImage = async () => {
     const imagepath = await AsyncStorage.getItem('imagepath');
     this.setState({photo: imagepath, loading: true});

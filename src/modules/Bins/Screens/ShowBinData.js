@@ -158,7 +158,7 @@ export default class ShowBinData extends Component {
             alignSelf: 'center',
           }}
           source={{
-            uri: this.state.imagepath,
+            uri: this.state.imagepath ? this.state.imagepath : null,
           }}
         />
         <View style={{flexDirection: 'row', marginTop: 20, left: 20}}>
