@@ -24,7 +24,7 @@ const Header = ({header, onPressCancel, onPressSave, ...props}) => {
         style={{
           flexDirection: 'row',
           marginTop: 20,
-          justifyContent: 'space-between',
+          // justifyContent: 'space-between',
           //   alignItems: 'center',
         }}>
         <TouchableOpacity
@@ -46,16 +46,19 @@ const Header = ({header, onPressCancel, onPressSave, ...props}) => {
             Cancel
           </Text>
         </TouchableOpacity>
-        <Text
-          style={{
-            color: '#0F0B56',
-            fontSize: 24,
-            lineHeight: 36,
-            fontWeight: '600',
-          }}>
-          {header}
-        </Text>
-        <TouchableOpacity
+        <View style={{marginLeft: 75}}>
+          <Text
+            style={{
+              color: '#0F0B56',
+              fontSize: 24,
+              lineHeight: 36,
+              fontWeight: '600',
+            }}>
+            {header}
+          </Text>
+        </View>
+
+        {/* <TouchableOpacity
           onPress={onPressSave}
           style={{
             backgroundColor: '#E5DFF5',
@@ -73,7 +76,7 @@ const Header = ({header, onPressCancel, onPressSave, ...props}) => {
             }}>
             Save
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

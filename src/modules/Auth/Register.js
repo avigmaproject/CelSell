@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import qs from 'qs';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+
 import Spinner from 'react-native-loading-spinner-overlay';
 import {useToast} from 'native-base';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -177,7 +179,7 @@ const Register = ({navigation}) => {
         flex: 1,
         backgroundColor: '#F3F2F4',
       }}>
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
         <Spinner visible={loading} />
         <View
           style={{
@@ -300,7 +302,7 @@ const Register = ({navigation}) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

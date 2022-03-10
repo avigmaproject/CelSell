@@ -13,10 +13,13 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dynamicLinks from '@react-native-firebase/dynamic-links';
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import {connect} from 'react-redux';
+
 // import {RNCamera} from 'react-native-camera';
 import HeaderBack from '../../../components/HeaderBack';
+import {setProductId} from '../../../store/action/auth/action';
 
-export default class ScanQr extends Component {
+class ScanQr extends Component {
   constructor() {
     super();
     this.state = {
@@ -26,6 +29,7 @@ export default class ScanQr extends Component {
 
   _getInitialUrl = async () => {
     const url = dynamicLinks().onLink(this.handleDynamicLink);
+    console.log(url, 'url');
     this.setState({
       linkdata: url,
       photo: '',
@@ -48,7 +52,9 @@ export default class ScanQr extends Component {
   };
   handleDynamicLink = link => {
     if (link.url) {
-      this.props.navigation.navigate('ShowBinData', {link: link.url});
+      this.props.navigation.navigate('ShowBinData', {
+        link: link.url,
+      });
     }
   };
 
@@ -56,6 +62,12 @@ export default class ScanQr extends Component {
     console.log(this.state.linkdata, 'substring');
   };
   componentDidMount = async () => {
+    if (this.props.route.params) {
+      this.props.setProductId(this.props.route.params.prodId);
+    } else {
+      this.props.setProductId(null);
+    }
+
     this.GetImage();
     this._getInitialUrl();
     this.substring();
@@ -65,7 +77,10 @@ export default class ScanQr extends Component {
       .then(link => {
         if (link) {
           console.log('Loginlink', link);
-          this.props.navigation.navigate('ShowBinData', {link: link.url});
+          console.log(id, 'compoent');
+          this.props.navigation.navigate('ShowBinData', {
+            link: link.url,
+          });
         }
         console.log('Loginlinklink', link);
       });
@@ -120,7 +135,7 @@ export default class ScanQr extends Component {
             top: 10,
           }}>
           <Text style={styles.buttonText}>
-            Scan a QR code to get bin details
+            Scan the QR code to move the item
           </Text>
         </View>
 
@@ -156,3 +171,9 @@ const styles = StyleSheet.create({
     color: 'rgb(0,122,255)',
   },
 });
+
+const mapDispatchToProps = {
+  // to stored
+  setProductId,
+};
+export default connect(null, mapDispatchToProps)(ScanQr);

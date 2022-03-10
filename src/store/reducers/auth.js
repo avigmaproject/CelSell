@@ -4,6 +4,9 @@ export const initialState = {
   userToken: null,
   registerMode: false,
   userid: null,
+  binidata: [],
+  productdata: null,
+  profileimage: '',
 };
 
 const reducer = (state = initialState, action) => {
@@ -43,6 +46,24 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         userid: action.userid,
+      };
+    }
+    case 'SET_BINID': {
+      return {
+        ...state,
+        binidata: action.binidata,
+      };
+    }
+    case 'SET_PRODUCTID': {
+      return {
+        ...state,
+        productdata: action.productdata,
+      };
+    }
+    case 'SET_IMAGE': {
+      return {
+        ...state,
+        profileimage: action.profileimage,
       };
     }
     default: {

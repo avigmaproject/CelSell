@@ -4,6 +4,8 @@ import {View, Alert, StyleSheet} from 'react-native';
 import {Select, Toast} from 'native-base';
 import {Avatar, Title, Caption, Drawer, Divider} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import Entypo from 'react-native-vector-icons/Entypo';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -65,7 +67,7 @@ class DrawerContent extends Component {
     });
     try {
       const res = await getprofiles(data, token);
-      console.log(res, 'res[0][0].User_Name');
+      // console.log(res, 'res[0][0].User_Name');
       this.setState({
         loading: false,
         data: res[0],
@@ -253,7 +255,7 @@ class DrawerContent extends Component {
             labelStyle={styles.labelStyle}
           />
           <Divider />
-          <DrawerItem
+          {/* <DrawerItem
             icon={() => (
               <MaterialCommunityIcons
                 name="qrcode-scan"
@@ -265,16 +267,16 @@ class DrawerContent extends Component {
             onPress={() => this.props.navigation.navigate('ScanQr')}
             labelStyle={styles.labelStyle}
           />
-          <Divider />
-          {/* <DrawerItem
+          <Divider /> */}
+          <DrawerItem
             icon={() => (
-              <SimpleLineIcons name="plus" color="#0F0B56" size={25} />
+              <AntDesign name="notification" color="#0F0B56" size={25} />
             )}
-            label="Create New Bin"
-            onPress={() => this.props.navigation.navigate('CreateBin')}
+            label="Bin Request"
+            onPress={() => this.props.navigation.navigate('BinRequest')}
             labelStyle={styles.labelStyle}
           />
-          <Divider /> */}
+          <Divider />
           <DrawerItem
             icon={() => <Entypo name="export" color="#0F0B56" size={25} />}
             label="Export"

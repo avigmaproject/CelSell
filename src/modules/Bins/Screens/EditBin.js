@@ -25,6 +25,7 @@ import {
   uploadimage,
   getbins,
 } from '../../../services/api.function';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const options = [
   'Cancel',
@@ -43,11 +44,16 @@ export default class EditBin extends Component {
       photo: '',
       loading: false,
       location: '',
+      locatonname: '',
       base64: '',
       filename: 'image',
       imagepath: '',
       unit: null,
       shelf: null,
+      column: null,
+      newlocation: '',
+      binqrpath: '',
+      id: null,
     };
   }
   componentDidMount() {
@@ -56,6 +62,15 @@ export default class EditBin extends Component {
       this.GetImage();
       this.GetLocation();
       this.getToken();
+      if (this.props.route.params.item.Bin_PkeyID) {
+        this.setState({
+          id: this.props.route.params.item.Bin_PkeyID,
+        });
+      } else {
+        this.setState({
+          id: this.props.route.params.item.PkeyID,
+        });
+      }
     });
   }
 
@@ -66,7 +81,7 @@ export default class EditBin extends Component {
   GetLocation = async () => {
     this.setState({loading: true});
     var data = JSON.stringify({
-      Type: 1,
+      Type: 3,
     });
     try {
       const res = await getlocation(data);
@@ -93,7 +108,7 @@ export default class EditBin extends Component {
   GetBins = async token => {
     this.setState({loading: true});
     var data = JSON.stringify({
-      Bin_PkeyID: this.props.route.params.item.Bin_PkeyID,
+      Bin_PkeyID: this.state.id,
       Type: 2,
       Bin_PkeyID_Master: 1,
       Bin_PkeyID_Owner: 1,
@@ -107,7 +122,10 @@ export default class EditBin extends Component {
         unit: res[0][0].Bin_Unit,
         shelf: res[0][0].Bin_Shelf,
         loading: false,
-        location: res[0][0].Loc_Name,
+        location: res[0][0].Bin_Loc_ID,
+        locatonname: res[0][0].Loc_Name,
+        column: res[0][0].Bin_Column,
+        binqrpath: res[0][0].Bin_QR_Path,
       });
     } catch (error) {
       this.setState({loading: false});
@@ -115,89 +133,119 @@ export default class EditBin extends Component {
     }
   };
 
+  Validation = () => {
+    let cancel = false;
+    if (this.state.name.length === 0) {
+      cancel = true;
+    }
+    // if (this.state.location.length === 0) {
+    //   cancel = true;
+    // }
+    // if (this.state.shelf.length === 0) {
+    //   cancel = true;
+    // }
+    // if (this.state.unit.length === 0) {
+    //   cancel = true;
+    // }
+    if (cancel) {
+      this.showerrorMessage('Bin name required');
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   UpdateBin = async () => {
-    this.setState({loading: false});
-    const Userid = Number(await AsyncStorage.getItem('ownerid'));
-    let data = {
-      Bin_PkeyID: this.props.route.params.item.Bin_PkeyID,
-      Bin_Name: this.state.name,
-      Bin_IsActive: 1,
-      Bin_IsDelete: 0,
-      Type: 2,
-      Bin_PkeyID_Master: 1,
-      Bin_PkeyID_Owner: Userid,
-      Bin_Loc_ID: 1,
-      Bin_Unit: this.state.unit,
-      Bin_Shelf: this.state.shelf,
-      Bin_Image_Path: this.state.imagepath,
-      Loc_Name: this.state.location,
-      Bin_QR_Path: this.props.route.params.item.Bin_QR_Path,
-    };
-    console.log(data, 'addbin');
-    try {
-      token = await AsyncStorage.getItem('token');
-      const res = await updatebin(data, token);
-      console.log('ressssss:', res);
-      this.showMessage('Bin Updated');
-      this.props.navigation.navigate('HomeScreen');
+    if (this.Validation()) {
       this.setState({loading: false});
-    } catch (error) {
-      this.showerrorMessage(error.response.data.error_description);
+      const Userid = Number(await AsyncStorage.getItem('ownerid'));
+      let data = {
+        Bin_PkeyID: this.state.id,
+        Bin_Name: this.state.name,
+        Bin_IsActive: 1,
+        Bin_IsDelete: 0,
+        Type: 2,
+        Bin_PkeyID_Master: 1,
+        Bin_PkeyID_Owner: Userid,
+        Bin_Loc_ID: this.state.location,
+        Bin_Unit: this.state.unit,
+        Bin_Shelf: this.state.shelf,
+        Bin_Image_Path: this.state.imagepath,
+        Loc_Name: this.state.locatonname,
+        Bin_QR_Path: this.state.binqrpath,
+        Bin_Loc_Name: this.state.newlocation,
+        Bin_Column: this.state.column,
+      };
+      console.log(data, 'addbin');
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const res = await updatebin(data, token);
+        console.log('ressssss:', res);
+        this.showMessage('Bin Updated');
+        this.props.navigation.navigate('HomeScreen');
+        this.setState({loading: false});
+      } catch (error) {
+        this.showerrorMessage(error.response.data.error_description);
+      }
     }
   };
 
   onOpenImage = () => this.ActionSheet.show();
 
   ImageGallery = async () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   ImageCamera = async () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   uploadImage = async () => {
@@ -277,12 +325,12 @@ export default class EditBin extends Component {
   deletebin = async () => {
     this.setState({loading: false});
     let data = {
-      Bin_PkeyID: this.props.route.params.item.Bin_PkeyID,
+      Bin_PkeyID: this.state.id,
       Bin_IsActive: false,
       Type: 4,
     };
     try {
-      token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('token');
       const res = await updatebin(data, token);
       console.log('ressssss:', res);
       this.showMessage('Bin Deleted');
@@ -306,7 +354,7 @@ export default class EditBin extends Component {
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: '#F3F2F4'}}>
         <Spinner visible={this.state.loading} />
-        <ScrollView keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
           <HeaderwithDelete
             text="Edit Bin"
             onPress={() => this.props.navigation.goBack()}
@@ -333,7 +381,6 @@ export default class EditBin extends Component {
                 height: 55,
                 backgroundColor: '#fff',
               }}
-              value={this.state.location}
               selectedValue={this.state.location}
               width="90%"
               placeholder="Select Location"
@@ -348,6 +395,18 @@ export default class EditBin extends Component {
               })}
             </Select>
           </View>
+          {this.state.location === -90 ? (
+            <View style={{marginTop: 20}}>
+              <InputText
+                label="Add Location"
+                onChangeText={newlocation =>
+                  this.setState({newlocation: newlocation})
+                }
+                value={this.state.newlocation}
+                placeholder="Enter new vendor name"
+              />
+            </View>
+          ) : null}
           <ActionSheet
             ref={o => (this.ActionSheet = o)}
             title={
@@ -385,7 +444,16 @@ export default class EditBin extends Component {
               keyboardType="numeric"
             />
           </View>
-          <View>
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Enter Column"
+              onChangeText={column => this.setState({column: column})}
+              value={this.state.column}
+              placeholder="Enter Column"
+              keyboardType="numeric"
+            />
+          </View>
+          {/* <View>
             <FAB
               small
               icon="camera"
@@ -414,16 +482,16 @@ export default class EditBin extends Component {
                 }}
               />
             </View>
-          </View>
+          </View> */}
 
-          <View style={{marginTop: 100}}>
+          <View style={{marginTop: 50}}>
             <Button
               text="Save"
               backgroundColor="#6633FF"
               onPress={() => this.UpdateBin()}
             />
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }

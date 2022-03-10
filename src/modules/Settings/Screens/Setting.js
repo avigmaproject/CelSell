@@ -53,13 +53,13 @@ const Setting = ({navigation}) => {
           />
         </View>
 
-        <View style={{marginTop: 20}}>
+        {/* <View style={{marginTop: 20}}>
           <Button
             text="Move the items"
             backgroundColor="#6633FF"
             onPress={() => navigation.navigate('MoveItems')}
           />
-        </View>
+        </View> */}
         <View style={{marginTop: 20, marginBottom: 20}}>
           <Button
             text="Transfer the bins to others"

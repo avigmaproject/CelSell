@@ -37,7 +37,7 @@ const IncreDecre = ({onPressIncre, onPressDecre, value, ...props}) => {
           paddingLeft: 15,
         }}>
         <TouchableOpacity
-          onPress={onPressIncre}
+          onPress={onPressDecre}
           style={{
             backgroundColor: '#FFFFFF',
             height: 75,
@@ -47,7 +47,7 @@ const IncreDecre = ({onPressIncre, onPressDecre, value, ...props}) => {
             borderWidth: 1,
             borderColor: '#E4E4E4',
           }}>
-          <Feather name="plus" size={30} color="#ACACAC" />
+          <Feather name="minus" size={30} color="#ACACAC" />
         </TouchableOpacity>
         <View
           style={{
@@ -70,7 +70,7 @@ const IncreDecre = ({onPressIncre, onPressDecre, value, ...props}) => {
           </Text>
         </View>
         <TouchableOpacity
-          onPress={onPressDecre}
+          onPress={onPressIncre}
           style={{
             backgroundColor: '#FFFFFF',
             height: 75,
@@ -80,7 +80,7 @@ const IncreDecre = ({onPressIncre, onPressDecre, value, ...props}) => {
             borderWidth: 1,
             borderColor: '#E4E4E4',
           }}>
-          <Feather name="minus" size={30} color="#ACACAC" />
+          <Feather name="plus" size={30} color="#ACACAC" />
         </TouchableOpacity>
       </View>
     </View>

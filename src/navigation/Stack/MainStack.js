@@ -27,6 +27,7 @@ import UpdateProfile from '../../modules/Settings/Screens/ChildProfile/UpdatePro
 import AddProfile from '../../modules/Settings/Screens/ChildProfile/AddProfile';
 import MoveItems from '../../modules/Settings/Screens/Move_Bin_Item/MoveItems';
 import TransferBin from '../../modules/Settings/Screens/Move_Bin_Item/TransferBin';
+import BinRequest from '../../modules/Settings/Screens/Move_Bin_Item/BinRequest';
 
 const AuthStack = createStackNavigator();
 
@@ -67,6 +68,7 @@ export const StackNavigation = () => {
       <Stack.Screen name="AddProfile" component={AddProfile} />
       <Stack.Screen name="MoveItems" component={MoveItems} />
       <Stack.Screen name="TransferBin" component={TransferBin} />
+      <Stack.Screen name="BinRequest" component={BinRequest} />
     </Stack.Navigator>
   );
 };

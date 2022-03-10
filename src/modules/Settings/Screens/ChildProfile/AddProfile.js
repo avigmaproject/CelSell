@@ -16,6 +16,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {ActionSheetCustom as ActionSheet} from 'react-native-actionsheet';
 import ImagePicker from 'react-native-image-crop-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import HeaderBack from '../../../../components/HeaderBack';
 import InputText from '../../../../components/InputText';
@@ -51,6 +52,7 @@ export default class AddProfile extends Component {
       email: '',
       value: null,
       items: [],
+      newlocation: '',
     };
   }
 
@@ -120,7 +122,7 @@ export default class AddProfile extends Component {
   };
 
   AddProfile = async () => {
-    const {email, name, imagepath, location} = this.state;
+    const {email, name, imagepath, location, newlocation} = this.state;
     if (this.Validation() && this.checkEmail(email) && this.ImageValidation()) {
       this.setState({
         loading: true,
@@ -129,15 +131,22 @@ export default class AddProfile extends Component {
         User_Email: email,
         User_Name: name,
         User_Image_Path: imagepath,
-        User_Address: location,
+        User_Loc: location,
+        User_Address: newlocation,
+        User_PkeyID: 0,
         Type: 7,
       };
       try {
+        console.log(data, 'profile');
         const token = await AsyncStorage.getItem('token');
         const res = await addprofile(data, token);
-        console.log('ressssss:', res);
-        this.showMessage('Profile Added');
-        this.props.navigation.navigate('Profiles');
+        console.log('ProfileRes:', res[0][0]);
+        if (res[0][0] === -99) {
+          this.showerrorMessage('Email has already taken');
+        } else {
+          this.showMessage('Profile Added');
+          this.props.navigation.navigate('Profiles');
+        }
         this.setState({
           loading: false,
         });
@@ -152,7 +161,7 @@ export default class AddProfile extends Component {
       loading: true,
     });
     var data = JSON.stringify({
-      Type: 1,
+      Type: 3,
     });
     try {
       const res = await getlocation(data);
@@ -214,55 +223,59 @@ export default class AddProfile extends Component {
   onOpenImage = () => this.ActionSheet.show();
 
   ImageGallery = async () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   ImageCamera = async () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   uploadImage = async () => {
@@ -305,105 +318,119 @@ export default class AddProfile extends Component {
               : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg'
           }
         />
-        <View style={{marginTop: 30}}>
-          <InputText
-            label="Name"
-            onChangeText={name => this.setState({name: name})}
-            value={this.state.name}
-            placeholder="Enter your Name"
-          />
-        </View>
-        <View style={{marginTop: 20}}>
-          <InputText
-            label="Email"
-            onChangeText={email => this.setState({email: email})}
-            value={this.state.email}
-            placeholder="Enter your Emal ID"
-          />
-        </View>
-        <View style={{marginTop: 20, alignItems: 'center'}}>
-          <Select
-            dropdownIcon
-            // isDisabled={editable}
-            // variant="unstyled"
-            style={{
-              // borderWidth: 0,
-              fontSize: 14,
-              paddingLeft: 20,
-              color: '#000',
-              height: 55,
-              backgroundColor: '#fff',
-            }}
-            selectedValue={this.state.location}
-            width="90%"
-            // accessibilityLabel="Select your favorite programming language"
-            placeholder="Select Location"
-            onValueChange={itemValue => this.setState({location: itemValue})}
-            _selectedItem={{
-              bg: 'gray',
-              // endIcon: nu,
-            }}>
-            {this.state.data.map(item => {
-              return (
-                <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
-              );
-            })}
-          </Select>
-        </View>
-        <ActionSheet
-          ref={o => (this.ActionSheet = o)}
-          title={
-            <Text style={{color: '#000', fontSize: 18}}>Profile Photo</Text>
-          }
-          options={options}
-          cancelButtonIndex={0}
-          destructiveButtonIndex={4}
-          useNativeDriver={true}
-          onPress={index => {
-            if (index === 0) {
-              // cancel action
-            } else if (index === 1) {
-              this.ImageGallery();
-            } else if (index === 2) {
-              this.ImageCamera();
-            }
-          }}
-        />
-        <View>
-          <FAB
-            small
-            icon="camera"
-            label="Upload Image"
-            style={{
-              position: 'absolute',
-              left: 20,
-              top: 30,
-              backgroundColor: '#BDBDBD',
-            }}
-            onPress={() => this.onOpenImage()}
-          />
-          <View style={{position: 'absolute', right: 90, top: 30}}>
-            <Image
-              style={{
-                height: 45,
-                width: 45,
-                // borderRadius: 1,
-                // borderColor: '#BDBDBD',
-                // borderWidth: 1,
-              }}
-              source={{
-                uri: this.state.imagepath ? this.state.imagepath : null,
-              }}
+        <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
+          <View style={{marginTop: 30}}>
+            <InputText
+              label="Name"
+              onChangeText={name => this.setState({name: name})}
+              value={this.state.name}
+              placeholder="Enter your Name"
             />
           </View>
-        </View>
-        <View style={{marginTop: 100}}>
-          <Button
-            text="Add"
-            onPress={() => this.AddProfile()}
-            backgroundColor="#6633FF"
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Email"
+              onChangeText={email => this.setState({email: email})}
+              value={this.state.email}
+              placeholder="Enter your Emal ID"
+            />
+          </View>
+          <View style={{marginTop: 20, alignItems: 'center'}}>
+            <Select
+              dropdownIcon
+              // isDisabled={editable}
+              // variant="unstyled"
+              style={{
+                // borderWidth: 0,
+                fontSize: 14,
+                paddingLeft: 20,
+                color: '#000',
+                height: 55,
+                backgroundColor: '#fff',
+              }}
+              selectedValue={this.state.location}
+              width="90%"
+              // accessibilityLabel="Select your favorite programming language"
+              placeholder="Select Location"
+              onValueChange={itemValue => this.setState({location: itemValue})}
+              _selectedItem={{
+                bg: 'gray',
+                // endIcon: nu,
+              }}>
+              {this.state.data.map(item => {
+                return (
+                  <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
+                );
+              })}
+            </Select>
+          </View>
+          {this.state.location === -90 ? (
+            <View style={{marginTop: 20}}>
+              <InputText
+                label="Add Location"
+                onChangeText={newlocation =>
+                  this.setState({newlocation: newlocation})
+                }
+                value={this.state.newlocation}
+                placeholder="Enter new location"
+              />
+            </View>
+          ) : null}
+          <ActionSheet
+            ref={o => (this.ActionSheet = o)}
+            title={
+              <Text style={{color: '#000', fontSize: 18}}>Profile Photo</Text>
+            }
+            options={options}
+            cancelButtonIndex={0}
+            destructiveButtonIndex={4}
+            useNativeDriver={true}
+            onPress={index => {
+              if (index === 0) {
+                // cancel action
+              } else if (index === 1) {
+                this.ImageGallery();
+              } else if (index === 2) {
+                this.ImageCamera();
+              }
+            }}
           />
-        </View>
+          <View>
+            <FAB
+              small
+              icon="camera"
+              label="Upload Image"
+              style={{
+                position: 'absolute',
+                left: 20,
+                top: 30,
+                backgroundColor: '#BDBDBD',
+              }}
+              onPress={() => this.onOpenImage()}
+            />
+            <View style={{position: 'absolute', right: 90, top: 30}}>
+              <Image
+                style={{
+                  height: 45,
+                  width: 45,
+                  // borderRadius: 1,
+                  // borderColor: '#BDBDBD',
+                  // borderWidth: 1,
+                }}
+                source={{
+                  uri: this.state.imagepath ? this.state.imagepath : null,
+                }}
+              />
+            </View>
+          </View>
+          <View style={{marginTop: 100}}>
+            <Button
+              text="Add"
+              onPress={() => this.AddProfile()}
+              backgroundColor="#6633FF"
+            />
+          </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }

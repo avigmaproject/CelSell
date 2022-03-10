@@ -19,6 +19,7 @@ import {
   userprofile,
   updateuserprofile,
 } from '../../../../services/api.function';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const EditProfile = ({navigation}) => {
   const [data, setData] = React.useState({
@@ -61,8 +62,8 @@ const EditProfile = ({navigation}) => {
     });
     try {
       const res = await userprofile(data, token);
-      console.log(res, 'ressssssss');
-      console.log(res[0][0].User_Email, ' res[0][0].User_Name');
+      // console.log(res, 'ressssssss');
+      // console.log(res[0][0].User_Email, ' res[0][0].User_Name');
       setName(res[0][0].User_Name);
       setEmail(res[0][0].User_Email);
       setPhone(res[0][0].User_Phone);
@@ -192,7 +193,7 @@ const EditProfile = ({navigation}) => {
         text="Edit Your Profile"
         onPress={() => navigation.goBack()}
       />
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
         <View style={{marginTop: 50}}>
           <InputText
             label="Full Name"
@@ -237,7 +238,7 @@ const EditProfile = ({navigation}) => {
             />
           </TouchableOpacity>
         </View>
-        <View style={{marginTop: 20, alignItems: 'center'}}>
+        {/* <View style={{marginTop: 20, alignItems: 'center'}}>
           <Select
             _selectedItem={{
               bg: '#ACACAC',
@@ -259,7 +260,7 @@ const EditProfile = ({navigation}) => {
             <Select.Item label="Male" value={2} />
             <Select.Item label="Other" value={3} />
           </Select>
-        </View>
+        </View> */}
         <View style={{marginTop: 50, marginBottom: 50}}>
           <Button
             text="Update"
@@ -267,7 +268,7 @@ const EditProfile = ({navigation}) => {
             backgroundColor="#6633FF"
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

@@ -3,23 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>952678901123-o0v2lhhdll5t4rdjkr4k9vpjpnhlc347.apps.googleusercontent.com</string>
+	<string>869566570148-cu3nj5g6n8v7f95pvi0qsqbj0esrlt67.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.952678901123-o0v2lhhdll5t4rdjkr4k9vpjpnhlc347</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>952678901123-345u43pfojrv8qn6errcadtr8d0o4d6l.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.869566570148-cu3nj5g6n8v7f95pvi0qsqbj0esrlt67</string>
 	<key>API_KEY</key>
-	<string>AIzaSyB_GiiMIWkCcr05m1o4sE5T3avJn2_RVF4</string>
+	<string>AIzaSyB-tEUxBH2DfbiX91YCaXbdnpZeaVUBkng</string>
 	<key>GCM_SENDER_ID</key>
-	<string>952678901123</string>
+	<string>869566570148</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>org.reactjs.native.example.CellSell</string>
+	<string>org.reactjs.native.example.CS-Organizer</string>
 	<key>PROJECT_ID</key>
-	<string>celsell-4b86d</string>
+	<string>celsell-6b1b7</string>
 	<key>STORAGE_BUCKET</key>
-	<string>celsell-4b86d.appspot.com</string>
+	<string>celsell-6b1b7.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:952678901123:ios:de43740feb84ae804c82b6</string>
+	<string>1:869566570148:ios:69e68c4c97a6a98163d031</string>
 </dict>
 </plist>

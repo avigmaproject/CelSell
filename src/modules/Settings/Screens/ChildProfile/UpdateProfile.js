@@ -29,6 +29,7 @@ import {
   deleteprofile,
   uploadimage,
 } from '../../../../services/api.function';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const options = [
   'Cancel',
@@ -54,6 +55,7 @@ export default class UpdateProfile extends Component {
       value: null,
       items: [],
       Id: null,
+      newlocation: '',
     };
   }
 
@@ -63,6 +65,10 @@ export default class UpdateProfile extends Component {
       this.GetImage();
       this.GetLocation();
       this.getToken();
+      console.log(
+        this.props.route.params.item.User_PkeyID,
+        'this.props.route.params.item.User_PkeyID',
+      );
     });
   }
 
@@ -89,7 +95,7 @@ export default class UpdateProfile extends Component {
       this.setState({
         email: res[0][0].User_Email,
         name: res[0][0].User_Name,
-        location: res[0][0].User_Address,
+        location: res[0][0].User_Loc,
         imagepath: res[0][0].User_Image_Path,
         loading: false,
       });
@@ -144,14 +150,16 @@ export default class UpdateProfile extends Component {
     if (this.Validation() && this.checkEmail(this.state.email)) {
       this.setState({loading: true});
       let data = {
-        Type: 8,
+        Type: 10,
         User_PkeyID: this.props.route.params.item.User_PkeyID,
         User_Email: this.state.email,
         User_Name: this.state.name,
-        User_Address: this.state.location,
+        User_Loc: this.state.location,
+        User_Address: this.state.newlocation,
         User_Image_Path: this.state.imagepath,
         User_IsActive: true,
       };
+      console.log(data, 'data');
       try {
         const token = await AsyncStorage.getItem('token');
         const res = await updateprofile(data, token);
@@ -218,7 +226,7 @@ export default class UpdateProfile extends Component {
   GetLocation = async () => {
     this.setState({loading: true});
     var data = JSON.stringify({
-      Type: 1,
+      Type: 3,
     });
     try {
       const res = await getlocation(data);
@@ -256,23 +264,28 @@ export default class UpdateProfile extends Component {
   // };
 
   deleteProfile = async () => {
-    const id = route.params.item.User_PkeyID_Master;
-    if (id !== 0) {
-      this.setState({loading: true});
-      let data = {
-        Type: 8,
-        User_PkeyID: route.params.item.User_PkeyID,
-        User_Email: route.params.item.User_Email,
-        User_Name: route.params.item.User_Name,
-        User_IsActive: false,
-      };
-      this.setState({loading: false});
-      const token = await AsyncStorage.getItem('token');
-      const res = await deleteprofile(data, token);
-      this.showMessage('Profile deleted!');
-      this.props.navigation.navigate('Profiles');
-    } else {
-      warningMessage("main profile can't be deletable");
+    try {
+      const id = this.props.route.params.item.User_PkeyID_Master;
+      console.log(id, 'id');
+      if (id !== 0) {
+        this.setState({loading: true});
+        let data = {
+          Type: 8,
+          User_PkeyID: this.props.route.params.item.User_PkeyID,
+          User_Email: this.props.route.params.item.User_Email,
+          User_Name: this.props.route.params.item.User_Name,
+          User_IsActive: false,
+        };
+        console.log(data, 'data');
+        this.setState({loading: false});
+        const token = await AsyncStorage.getItem('token');
+        const res = await deleteprofile(data, token);
+        console.log(res, 'delete');
+        this.showMessage('Profile deleted!');
+        this.props.navigation.navigate('Profiles');
+      }
+    } catch (error) {
+      showerrorMessage(error.response.data.error_description);
     }
   };
 
@@ -288,55 +301,59 @@ export default class UpdateProfile extends Component {
   onOpenImage = () => this.ActionSheet.show();
 
   ImageGallery = async () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   ImageCamera = async () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   uploadImage = async () => {
@@ -374,47 +391,60 @@ export default class UpdateProfile extends Component {
           onPress={() => this.props.navigation.goBack()}
           onDelete={() => this.Delete()}
         />
-        <View style={{marginTop: 30}}>
-          <InputText
-            label="Name"
-            onChangeText={name => this.setState({name: name})}
-            value={this.state.name}
-            placeholder="Enter your Name"
-          />
-        </View>
-        <View style={{marginTop: 20}}>
-          <InputText
-            label="Email"
-            onChangeText={email => this.setState({email: email})}
-            value={this.state.email}
-            placeholder="Enter your Emal ID"
-          />
-        </View>
-        <View style={{marginTop: 20, alignItems: 'center'}}>
-          <Select
-            dropdownIcon
-            style={{
-              fontSize: 14,
-              paddingLeft: 20,
-              color: '#000',
-              height: 55,
-              backgroundColor: '#fff',
-            }}
-            selectedValue={this.state.location}
-            width="90%"
-            placeholder="Enter Location"
-            onValueChange={itemValue => this.setState({location: itemValue})}
-            _selectedItem={{
-              bg: 'gray',
-            }}>
-            {this.state.data.map(item => {
-              return (
-                <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
-              );
-            })}
-          </Select>
-        </View>
-        {/* 
+        <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
+          <View style={{marginTop: 30}}>
+            <InputText
+              label="Name"
+              onChangeText={name => this.setState({name: name})}
+              value={this.state.name}
+              placeholder="Enter your Name"
+            />
+          </View>
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Email"
+              onChangeText={email => this.setState({email: email})}
+              value={this.state.email}
+              placeholder="Enter your Emal ID"
+            />
+          </View>
+          <View style={{marginTop: 20, alignItems: 'center'}}>
+            <Select
+              dropdownIcon
+              style={{
+                fontSize: 14,
+                paddingLeft: 20,
+                color: '#000',
+                height: 55,
+                backgroundColor: '#fff',
+              }}
+              selectedValue={this.state.location}
+              width="90%"
+              placeholder="Enter Location"
+              onValueChange={itemValue => this.setState({location: itemValue})}
+              _selectedItem={{
+                bg: 'gray',
+              }}>
+              {this.state.data.map(item => {
+                return (
+                  <Select.Item label={item.Loc_Name} value={item.Loc_PkeyID} />
+                );
+              })}
+            </Select>
+          </View>
+          {this.state.location === -90 ? (
+            <View style={{marginTop: 20}}>
+              <InputText
+                label="Add Location"
+                onChangeText={newlocation =>
+                  this.setState({newlocation: newlocation})
+                }
+                value={this.state.newlocation}
+                placeholder="Enter new location"
+              />
+            </View>
+          ) : null}
+          {/* 
       <View>
         <BouncyCheckbox
           size={35}
@@ -436,60 +466,61 @@ export default class UpdateProfile extends Component {
           </Text>
         </View>
       </View> */}
-        <ActionSheet
-          ref={o => (this.ActionSheet = o)}
-          title={
-            <Text style={{color: '#000', fontSize: 18}}>Profile Photo</Text>
-          }
-          options={options}
-          cancelButtonIndex={0}
-          destructiveButtonIndex={4}
-          useNativeDriver={true}
-          onPress={index => {
-            if (index === 0) {
-              // cancel action
-            } else if (index === 1) {
-              this.ImageGallery();
-            } else if (index === 2) {
-              this.ImageCamera();
+          <ActionSheet
+            ref={o => (this.ActionSheet = o)}
+            title={
+              <Text style={{color: '#000', fontSize: 18}}>Profile Photo</Text>
             }
-          }}
-        />
-        <View>
-          <FAB
-            small
-            icon="camera"
-            label="Upload Image"
-            style={{
-              position: 'absolute',
-              left: 20,
-              top: 30,
-              backgroundColor: '#BDBDBD',
+            options={options}
+            cancelButtonIndex={0}
+            destructiveButtonIndex={4}
+            useNativeDriver={true}
+            onPress={index => {
+              if (index === 0) {
+                // cancel action
+              } else if (index === 1) {
+                this.ImageGallery();
+              } else if (index === 2) {
+                this.ImageCamera();
+              }
             }}
-            onPress={() => this.onOpenImage()}
           />
-          <View style={{position: 'absolute', right: 90, top: 30}}>
-            <Image
+          <View>
+            <FAB
+              small
+              icon="camera"
+              label="Upload Image"
               style={{
-                height: 45,
-                width: 45,
-                // borderRadius: 1,
-                // borderColor: '#BDBDBD',
-                // borderWidth: 1,
+                position: 'absolute',
+                left: 20,
+                top: 30,
+                backgroundColor: '#BDBDBD',
               }}
-              source={{
-                uri: this.state.imagepath ? this.state.imagepath : null,
-              }}
+              onPress={() => this.onOpenImage()}
+            />
+            <View style={{position: 'absolute', right: 90, top: 30}}>
+              <Image
+                style={{
+                  height: 45,
+                  width: 45,
+                  // borderRadius: 1,
+                  // borderColor: '#BDBDBD',
+                  // borderWidth: 1,
+                }}
+                source={{
+                  uri: this.state.imagepath ? this.state.imagepath : null,
+                }}
+              />
+            </View>
+          </View>
+          <View style={{marginTop: 100}}>
+            <Button
+              text="Save Profile"
+              backgroundColor="#6633FF"
+              onPress={() => this.UpdateProfiles()}
             />
           </View>
-        </View>
-        <View style={{marginTop: 100}}>
-          <Button
-            text="Save Profile"
-            backgroundColor="#6633FF"
-            onPress={() => this.UpdateProfiles()}
-          />
-        </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }

@@ -22,6 +22,7 @@ const InputText = props => {
       onBlur={props.onBlur}
       mode="outlined"
       outlineColor="transparent"
+      autoCapitalize="none"
       // dense
       style={{
         width: '90%',

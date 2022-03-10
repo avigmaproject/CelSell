@@ -8,25 +8,33 @@ import {
   View,
   TouchableOpacity,
   Image,
-  Button,
+  Keyboard,
 } from 'react-native';
 import {Select, Toast} from 'native-base';
+import {SliderBox} from 'react-native-image-slider-box';
+
 import Spinner from 'react-native-loading-spinner-overlay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ActionSheetCustom as ActionSheet} from 'react-native-actionsheet';
 import ImagePicker from 'react-native-image-crop-picker';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import DropDownPicker from 'react-native-dropdown-picker';
 import Carousel from 'react-native-snap-carousel';
 import Header from '../Components/Header';
 import Paragraph from '../Components/Paragraph';
 import IncreDecre from '../Components/IncreDecre';
+import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import Feather from 'react-native-vector-icons/Feather';
 import InputText from '../../../components/InputText';
+import Button from '../../../components/Button';
 import {
   uploadimage,
   addupdateproducts,
   getproducts,
   getcategorymaster,
   getsubcategorymaster,
+  getvendormaster,
+  getcolor,
 } from '../../../services/api.function';
 
 const options = [
@@ -52,7 +60,7 @@ export default class EditItem extends Component {
       newused: '',
       clicks: 0,
       show: false,
-      getimagepath: '',
+      getimagepath: [],
       imagepath: [],
       description: '',
       binid: '',
@@ -62,7 +70,39 @@ export default class EditItem extends Component {
       subcategory: [],
       subcategoryid: '',
       imageflag: false,
+      checkboxpull: false,
+      checkboxsold: false,
+      checkboxshot: false,
+      open: false,
+      value: null,
+      vendorList: [],
+      colordata: [],
+      autogeneratetitle: '',
+      associated: '',
+      notes: '',
+      location: null,
+      measurements: '',
+      shot: '',
     };
+    this.setValue = this.setValue.bind(this);
+  }
+
+  setValue(callback) {
+    this.setState(state => ({
+      value: callback(state.value),
+    }));
+  }
+
+  setItems(callback) {
+    this.setState(state => ({
+      vendorList: callback(state.vendorList),
+    }));
+  }
+
+  setOpen() {
+    this.setState({
+      open: !this.state.open,
+    });
   }
 
   componentDidMount() {
@@ -70,6 +110,8 @@ export default class EditItem extends Component {
     this._unsubscribe = navigation.addListener('focus', () => {
       this.getToken();
       this.getcategory();
+      this.getvendor();
+      this.getcolordata();
     });
   }
 
@@ -95,38 +137,59 @@ export default class EditItem extends Component {
       loading: true,
     });
     var data = JSON.stringify({
-      Pro_PkeyID: this.props.route.params.item.Pro_PkeyID,
+      Pro_PkeyID: this.props.route.params.item.Pro_PkeyID
+        ? this.props.route.params.item.Pro_PkeyID
+        : this.props.route.params.item.PkeyID,
       Bin_PkeyID: 1,
       User_PkeyID: 1,
       Type: 2,
     });
     try {
       const res = await getproducts(data, token);
-      console.log(res, 'redsssssssssss');
-      // console.log('res[0][0].Pro_Price', res[0][0].Pro_Price);
-      this.setState({
-        description: res[0][0].Pro_Desc,
-        title: res[0][0].Pro_Name,
-        getimagepath: res[0][0].ProImage_ImagePath,
-        brand: res[0][0].Pro_BrandName,
-        gender: res[0][0].Pro_Gender,
-        color: res[0][0].Pro_Color,
-        size: res[0][0].Pro_Size,
-        vendor: res[0][0].Pro_Vendor_Name,
-        condition: res[0][0].Pro_Condition,
-        celebrity: res[0][0].Pro_Celeb_Name,
-        // newused: res[0][0].Pro_new_Used,
-        price: res[0][0].Pro_Price.toString(),
-        categoryid: res[0][0].Pro_Category,
-        subcategoryid: res[0][0].Pro_SubCategory,
-        binid: res[0][0].Pro_Bin_PkeyID,
-        loading: false,
-      });
-      if (res[0][0].Pro_new_Used === false) {
-        this.setState({newused: 'Used'});
-      } else {
-        this.setState({newused: 'New'});
+      // console.log(res, 'redsssssssssss');
+      const image = res[0][0]['product_Image_DTOs'];
+      const Image_Path = [];
+      for (var i = 0; i < image.length; i++) {
+        Image_Path.push(image[i]['ProImage_ImagePath']);
+        // console.log(Image_Path, 'Image_Path');
       }
+
+      this.setState(
+        {
+          imagepath: Image_Path,
+          description: res[0][0].Pro_Desc,
+          title: res[0][0].Pro_Name,
+          clicks: res[0][0].Pro_Qty,
+          // getimagepath: res[0][0].product_Image_DTOs,
+          brand: res[0][0].Pro_BrandName,
+          gender: res[0][0].Pro_Gender,
+          color: res[0][0].Pro_Color,
+          size: res[0][0].Pro_Size,
+          vendor: res[0][0].Pro_Vendor,
+          condition: res[0][0].Pro_Condition,
+          celebrity: res[0][0].Pro_Celeb_Ent,
+          newused: res[0][0].Pro_new_Used,
+          price: res[0][0].Pro_Price.toString(),
+          categoryid: res[0][0].Pro_Category,
+          subcategoryid: res[0][0].Pro_SubCategory,
+          binid: res[0][0].Pro_Bin_PkeyID,
+          checkboxpull: res[0][0].Pro_Pull,
+          checkboxsold: res[0][0].Pro_Sold,
+          associated: res[0][0].Pro_Associated_Cost.toString(),
+          notes: res[0][0].Pro_Notes,
+          location: res[0][0].Pro_Location,
+          loading: false,
+          measurements: res[0][0].Pro_Measurements,
+          checkboxshot: res[0][0].Pro_Shot,
+        },
+        () => this.getsubcategory(),
+      );
+      // if (res[0][0].Pro_new_Used === false) {
+      //   this.setState({newused: 'Used'});
+      // } else {
+      //   this.setState({newused: 'New'});
+      // }
+      this.ImageUpdate();
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
       this.setState({loading: false});
@@ -157,7 +220,7 @@ export default class EditItem extends Component {
       this.setState({
         category: res[0],
       });
-      console.log(res, 'ressss');
+      // console.log(res, 'ressss');
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
     }
@@ -181,66 +244,112 @@ export default class EditItem extends Component {
         });
       }
 
-      console.log(res, 'ressss');
+      // console.log(res, 'ressssgetsubcategory');
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
+    }
+  };
+
+  getvendor = async () => {
+    this.setState({loading: true});
+    let data = {
+      Type: 3,
+    };
+    try {
+      let token = await AsyncStorage.getItem('token');
+      const res = await getvendormaster(data, token);
+
+      const itemlist = res[0].map(item => ({
+        label: item.Ven_Name,
+        value: item.Ven_PkeyID,
+      }));
+      this.setState({
+        vendorList: itemlist,
+        loading: false,
+      });
+    } catch (error) {
+      console.log('hihihihihihih', {e: error.response.data.error});
+      this.setState({loading: false});
+    }
+  };
+
+  getcolordata = async () => {
+    this.setState({loading: true});
+    let data = {
+      Type: 3,
+    };
+    try {
+      let token = await AsyncStorage.getItem('token');
+      const res = await getcolor(data, token);
+      // console.log(res, 'coloerr');
+      this.setState({
+        colordata: res[0],
+        loading: false,
+      });
+    } catch (error) {
+      console.log('hihihihihihih', {e: error.response.data.error});
+      this.setState({loading: false});
     }
   };
 
   onOpenImage = () => this.ActionSheet.show();
 
   ImageGallery = async () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            imageflag: true,
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        // console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              imageflag: true,
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   ImageCamera = async () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            // imagepath: image.path,
-            imageflag: true,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        // console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+              imageflag: true,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   uploadImage = async () => {
@@ -253,29 +362,9 @@ export default class EditItem extends Component {
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await uploadimage(data, token);
-      console.log(res, 'resssss');
-      const ProImage_ImagePath = '';
-      const ProImage_IsFirst = false;
-      const ProImage_Number = 0;
-
-      if (this.state.imagepath.length === 0) {
-        var imagedata = {
-          ProImage_ImagePath: res[0].Image_Path,
-          ProImage_IsFirst: true,
-          ProImage_Number: 1,
-          Type: 1,
-        };
-      } else {
-        var imagedata = {
-          ProImage_ImagePath: res[0].Image_Path,
-          ProImage_IsFirst: false,
-          ProImage_Number: this.state.imagepath.length + 1,
-          Type: 1,
-        };
-      }
-      const joined = this.state.imagepath.concat(imagedata);
-      this.setState({imagepath: joined, loading: false});
-      console.log(this.state.imagepath, 'imagepathimagepath');
+      // console.log(res, 'resssss');
+      this.state.imagepath.push(res[0].Image_Path);
+      this.setState({loading: false}, () => this.ImageUpdate());
     } catch (error) {
       if (error.request) {
         console.log(error.request);
@@ -287,33 +376,125 @@ export default class EditItem extends Component {
     }
   };
 
+  ImageUpdate = () => {
+    const ProImage_ImagePath = '';
+    const ProImage_IsFirst = false;
+    const ProImage_Number = 0;
+    for (var i = 0; i < this.state.imagepath.length; i++) {
+      if (this.state.getimagepath.length === 0) {
+        var imagedata = {
+          ProImage_ImagePath: this.state.imagepath[0],
+          ProImage_IsFirst: true,
+          ProImage_Number: 1,
+          Type: 1,
+        };
+      } else {
+        var imagedata = {
+          ProImage_ImagePath: this.state.imagepath[i],
+          ProImage_IsFirst: false,
+          ProImage_Number: this.state.getimagepath.length + 1,
+          Type: 1,
+        };
+      }
+      const joined = this.state.getimagepath.concat(imagedata);
+      this.setState({getimagepath: joined, loading: false});
+      console.log(this.state.getimagepath, 'imagepathimagepath');
+    }
+  };
+
+  validateGender = value => {
+    var lvalue = 0;
+    switch (value) {
+      case 2: {
+        lvalue = "Men's";
+        break;
+      }
+      case 1: {
+        lvalue = "Women's";
+        break;
+      }
+    }
+    return lvalue;
+  };
+
+  validateSubcategory = value => {
+    const {subcategory} = this.state;
+    for (var i = 0; i < subcategory.length; i++) {
+      if (value === subcategory[i].SubCat_Pkey) {
+        return subcategory[i]['SubCat_Name'];
+      }
+    }
+  };
+
+  validateColor = value => {
+    const {colordata} = this.state;
+    for (var i = 0; i < colordata.length; i++) {
+      if (value === colordata[i].Col_PkeyID) {
+        return colordata[i].Col_Name;
+      }
+    }
+  };
+
+  validateNewused = value => {
+    var lvalue = 0;
+    switch (value) {
+      case 1: {
+        lvalue = 'New';
+        break;
+      }
+      case 2: {
+        lvalue = 'Used';
+        break;
+      }
+    }
+    return lvalue;
+  };
+
+  autogeneratedTitle = () => {
+    const {title, brand, gender, color, subcategoryid, newused, size} =
+      this.state;
+    let autogenerate = '';
+    // if (value) {
+    autogenerate =
+      brand +
+      ' ' +
+      this.validateGender(gender) +
+      ' ' +
+      this.validateColor(color) +
+      ' ' +
+      this.validateSubcategory(subcategoryid) +
+      ' ' +
+      '-' +
+      ' ' +
+      this.validateNewused(newused) +
+      ' ' +
+      '-' +
+      ' ' +
+      'Size' +
+      ' ' +
+      size;
+    // }
+    return autogenerate;
+  };
+
   Validation = () => {
     let cancel = false;
-    if (this.state.title.length === 0) {
-      cancel = true;
-    }
     if (this.state.brand.length === 0) {
       cancel = true;
     }
-    if (this.state.color.length === 0) {
+    if (this.state.color === null) {
       cancel = true;
     }
     if (this.state.size.length === 0) {
       cancel = true;
     }
-    if (this.state.vendor.length === 0) {
+    if (this.state.gender === null) {
       cancel = true;
     }
-    if (this.state.condition.length === 0) {
+    if (this.state.newused === null) {
       cancel = true;
     }
-    if (this.state.celebrity.length === 0) {
-      cancel = true;
-    }
-    if (this.state.description.length === 0) {
-      cancel = true;
-    }
-    if (this.state.imagepath.length === 0) {
+    if (this.state.subcategoryid === null) {
       cancel = true;
     }
     if (cancel) {
@@ -325,43 +506,55 @@ export default class EditItem extends Component {
   };
 
   editProduct = async () => {
-    this.setState({loading: true});
-    let data = {
-      Pro_PkeyID: this.props.route.params.item.Pro_PkeyID,
-      Pro_Name: this.state.title,
-      Pro_BrandName: this.state.brand,
-      Pro_Gender: this.state.gender,
-      Pro_Color: this.state.color,
-      // Pro_Detail: 'samsung galaxy',
-      Pro_Category: this.state.categoryid,
-      Pro_SubCategory: this.state.subcategoryid,
-      Pro_Condition: this.state.condition,
-      Pro_Size: this.state.size,
-      Pro_IsActive: 1,
-      Pro_IsDelete: 0,
-      Type: 2,
-      Pro_new_Used: this.state.newused,
-      Pro_Celeb_Name: this.state.celebrity,
-      Pro_Vendor_Name: this.state.vendor,
-      Pro_Qty: this.state.clicks,
-      Pro_Desc: this.state.description,
-      Pro_Images: JSON.stringify(this.state.imagepath),
-      // ProImage_ImagePath: 'abc',
-      product_Image_DTOs: null,
-      Pro_Bin_PkeyID: this.state.binid,
-      Pro_Price: this.state.price,
-    };
-    console.log(data, 'datssssssss');
-    try {
-      this.setState({loading: false});
-      token = await AsyncStorage.getItem('token');
-      const res = await addupdateproducts(data, token);
-      console.log('resssss', res);
-      this.showMessage('Item Updated');
-      this.props.navigation.navigate('ItemList');
-    } catch (error) {
-      this.setState({loading: false});
-      this.showerrorMessage(error.response.data.error_description);
+    Keyboard.dismiss();
+    if (this.Validation()) {
+      this.setState({loading: true});
+      let data = {
+        Pro_PkeyID: this.props.route.params.item.Pro_PkeyID
+          ? this.props.route.params.item.Pro_PkeyID
+          : this.props.route.params.item.PkeyID,
+        Pro_Name: this.autogeneratedTitle(),
+        Pro_BrandName: this.state.brand,
+        Pro_Gender: this.state.gender,
+        Pro_Color: this.state.color,
+        // Pro_Detail: 'samsung galaxy',
+        Pro_Category: this.state.categoryid,
+        Pro_SubCategory: this.state.subcategoryid,
+        Pro_Condition: this.state.condition,
+        Pro_Size: this.state.size,
+        Pro_IsActive: 1,
+        Pro_IsDelete: 0,
+        Type: 2,
+        Pro_new_Used: this.state.newused,
+        Pro_Celeb_Ent: this.state.celebrity,
+        Pro_Vendor: this.state.vendor,
+        Pro_Qty: this.state.clicks,
+        Pro_Desc: this.state.description,
+        Pro_Images: JSON.stringify(this.state.getimagepath),
+        // ProImage_ImagePath: 'abc',
+        product_Image_DTOs: null,
+        Pro_Bin_PkeyID: this.state.binid,
+        Pro_Price: this.state.price,
+        Pro_Pull: this.state.checkboxpull,
+        Pro_Sold: this.state.checkboxsold,
+        Pro_Associated_Cost: this.state.associated,
+        Pro_Notes: this.state.notes,
+        Pro_Location: this.state.location,
+        Pro_Measurements: this.state.measurements,
+        Pro_Shot: this.state.checkboxshot,
+      };
+      // console.log(data, 'datssssssss');
+      try {
+        this.setState({loading: false});
+        const token = await AsyncStorage.getItem('token');
+        const res = await addupdateproducts(data, token);
+        // console.log('resssss', res);
+        this.showMessage('Item Updated');
+        this.props.navigation.navigate('ShowBinData');
+      } catch (error) {
+        this.setState({loading: false});
+        this.showerrorMessage(error.response.data.error_description);
+      }
     }
   };
 
@@ -402,17 +595,16 @@ export default class EditItem extends Component {
   };
 
   render() {
-    console.log(this.state.price, 'price');
-    console.log(this.state.newused, 'newused');
+    // console.log(this.state.imagepath, 'imagepath');
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: '#F3F2F4'}}>
         <Spinner visible={this.state.loading} />
         <Header
           header="Edit Item"
           onPressCancel={() => this.props.navigation.goBack()}
-          onPressSave={() => this.editProduct()}
+          // onPressSave={() => this.editProduct()}
         />
-        <ScrollView keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
           <View style={{marginTop: 20}}>
             <InputText
               label="Title of Item"
@@ -448,33 +640,43 @@ export default class EditItem extends Component {
               }}>
               <Select.Item label="Female" value={1} />
               <Select.Item label="Male" value={2} />
-              <Select.Item label="Other" value={3} />
+              {/* <Select.Item label="Other" value={3} /> */}
+            </Select>
+          </View>
+          <View style={{marginTop: 20, alignItems: 'center'}}>
+            <Select
+              dropdownIcon
+              style={{
+                fontSize: 14,
+                paddingLeft: 20,
+                color: '#000',
+                height: 55,
+                backgroundColor: '#fff',
+              }}
+              selectedValue={this.state.color}
+              width="90%"
+              placeholder="Choose Color"
+              onValueChange={itemValue => this.setState({color: itemValue})}
+              _selectedItem={{
+                bg: 'gray',
+              }}>
+              {this.state.colordata.map(item => {
+                return (
+                  <Select.Item label={item.Col_Name} value={item.Col_PkeyID} />
+                );
+              })}
             </Select>
           </View>
           <View style={{marginTop: 20}}>
-            <InputText
-              label="Color"
-              onChangeText={color => this.setState({color: color})}
-              value={this.state.color}
-              placeholder="Enter Color"
+            <Paragraph
+              label="Description"
+              onChangeText={description =>
+                this.setState({description: description})
+              }
+              text={this.state.description}
             />
           </View>
-          <View style={{marginTop: 20}}>
-            <InputText
-              label="Size"
-              onChangeText={size => this.setState({size: size})}
-              value={this.state.size}
-              placeholder="Enter Size"
-            />
-          </View>
-          <View style={{marginTop: 20}}>
-            <InputText
-              label="Vendor name"
-              onChangeText={vendor => this.setState({vendor: vendor})}
-              value={this.state.vendor}
-              placeholder="Enter Vendor name"
-            />
-          </View>
+
           <View style={{marginTop: 20, alignItems: 'center'}}>
             <Select
               dropdownIcon
@@ -526,7 +728,7 @@ export default class EditItem extends Component {
                 return (
                   <Select.Item
                     label={item.SubCat_Name}
-                    value={item.SubCat_Cat_Pkey}
+                    value={item.SubCat_Pkey}
                   />
                 );
               })}
@@ -543,15 +745,76 @@ export default class EditItem extends Component {
                 backgroundColor: '#fff',
               }}
               selectedValue={this.state.newused}
-              value={this.state.newused}
               width="90%"
               placeholder="New/Used"
               onValueChange={itemValue => this.setState({newused: itemValue})}
               _selectedItem={{
                 bg: 'gray',
               }}>
-              <Select.Item label="New" value={0} />
-              <Select.Item label="Used" value={1} />
+              <Select.Item label="New" value={1} />
+              <Select.Item label="Used" value={2} />
+            </Select>
+          </View>
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Measurements"
+              onChangeText={measurements =>
+                this.setState({measurements: measurements})
+              }
+              value={this.state.measurements}
+              placeholder="Enter Measurements"
+            />
+          </View>
+          <View style={{marginTop: 20, alignItems: 'center'}}>
+            <Select
+              dropdownIcon
+              style={{
+                fontSize: 14,
+                paddingLeft: 20,
+                color: '#000',
+                height: 55,
+                backgroundColor: '#fff',
+              }}
+              selectedValue={this.state.condition}
+              width="90%"
+              placeholder="Condition"
+              onValueChange={itemValue => this.setState({condition: itemValue})}
+              _selectedItem={{
+                bg: 'gray',
+              }}>
+              <Select.Item label="Excellent" value={1} />
+              <Select.Item label="Good" value={2} />
+              <Select.Item label="Fair" value={3} />
+              <Select.Item label="New" value={4} />
+            </Select>
+          </View>
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Size"
+              onChangeText={size => this.setState({size: size})}
+              value={this.state.size}
+              placeholder="Enter Size"
+            />
+          </View>
+          <View style={{marginTop: 20, alignItems: 'center'}}>
+            <Select
+              dropdownIcon
+              style={{
+                fontSize: 14,
+                paddingLeft: 20,
+                color: '#000',
+                height: 55,
+                backgroundColor: '#fff',
+              }}
+              selectedValue={this.state.celebrity}
+              width="90%"
+              placeholder="Celebrity/Entourage"
+              onValueChange={itemValue => this.setState({celebrity: itemValue})}
+              _selectedItem={{
+                bg: 'gray',
+              }}>
+              <Select.Item label="Celebrity" value={1} />
+              <Select.Item label="Entourage" value={2} />
             </Select>
           </View>
           <View style={{marginTop: 20}}>
@@ -569,22 +832,144 @@ export default class EditItem extends Component {
               style={{position: 'absolute', right: 30, bottom: 15}}
             />
           </View>
+          <View style={{marginTop: 20, alignItems: 'center'}}>
+            <DropDownPicker
+              open={this.state.open}
+              value={this.state.vendor}
+              items={this.state.vendorList}
+              setOpen={() => this.setOpen()}
+              setValue={this.setValue}
+              setItems={this.setItems}
+              searchable={true}
+              listMode={'MODAL'}
+              placeholder="Vendor Name"
+              onChangeValue={value => {
+                this.setState({vendor: value});
+              }}
+              style={{
+                borderRadius: 0,
+                borderBottomWidth: 2,
+                borderColor: '#ffffff',
+                paddingHorizontal: 0,
+                backgroundColor: '#ffffff',
+                height: 60,
+                width: '90%',
+                paddingLeft: 20,
+              }}
+              containerStyle={{
+                backgroundColor: '#ffffff',
+                width: '90%',
+                borderRadius: 0,
+              }}
+              placeholderStyle={{color: 'gray'}}
+              searchPlaceholder="Search..."
+              searchTextInputStyle={{
+                borderRadius: 0,
+                height: 40,
+              }}
+            />
+          </View>
+
+          {this.state.vendor === -90 ? (
+            <View style={{marginTop: 20}}>
+              <InputText
+                label="Add Vendor"
+                onChangeText={addvendor =>
+                  this.setState({addvendor: addvendor})
+                }
+                value={this.state.addvendor}
+                placeholder="Enter new vendor name"
+              />
+            </View>
+          ) : null}
+
           <View style={{marginTop: 20}}>
             <InputText
-              label="Condition"
-              onChangeText={condition => this.setState({condition: condition})}
-              value={this.state.condition}
-              placeholder="Enter Condition"
+              label="Associated Costs"
+              onChangeText={associated =>
+                this.setState({associated: associated})
+              }
+              value={this.state.associated}
+              placeholder="Enter Associated Costs"
             />
           </View>
           <View style={{marginTop: 20}}>
             <InputText
-              label="Celebrity/Entourage"
-              onChangeText={celebrity => this.setState({celebrity: celebrity})}
-              value={this.state.celebrity}
-              placeholder="Enter Celebrity/Entourage"
+              label="Notes"
+              onChangeText={notes => this.setState({notes: notes})}
+              value={this.state.notes}
+              placeholder="Enter Notes"
             />
           </View>
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Location"
+              onChangeText={location => this.setState({location: location})}
+              value={this.state.location}
+              placeholder="Enter Location"
+            />
+          </View>
+          {/* <View style={{marginTop: 20}}>
+            <InputText
+              label="Shot"
+              onChangeText={shot => this.setState({shot: shot})}
+              value={this.state.shot}
+              placeholder="Enter Shot"
+            />
+          </View> */}
+          <IncreDecre
+            onPressIncre={() => this.IncrementItem()}
+            onPressDecre={() => this.DecreaseItem()}
+            value={this.state.clicks}
+          />
+
+          <View
+            style={{
+              marginTop: 30,
+              paddingRight: 35,
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              // paddingVertical: 20,
+              marginBottom: 30,
+            }}>
+            <BouncyCheckbox
+              size={30}
+              fillColor="#6633FF"
+              iconStyle={{color: '#000'}}
+              text="Pull"
+              isChecked={this.state.checkboxpull}
+              disableBuiltInState
+              onPress={(isChecked: boolean) => {
+                this.setState({checkboxpull: !this.state.checkboxpull});
+              }}
+              textStyle={{fontSize: 18, color: '#000', fontWeight: 'bold'}}
+            />
+            <BouncyCheckbox
+              size={30}
+              fillColor="#6633FF"
+              iconStyle={{color: '#000'}}
+              text="Sold"
+              isChecked={this.state.checkboxsold}
+              disableBuiltInState
+              onPress={(isChecked: boolean) => {
+                this.setState({checkboxsold: !this.state.checkboxsold});
+              }}
+              textStyle={{fontSize: 18, color: '#000', fontWeight: 'bold'}}
+            />
+            <BouncyCheckbox
+              size={30}
+              fillColor="#6633FF"
+              iconStyle={{color: '#000'}}
+              text="Sold"
+              isChecked={this.state.checkboxshot}
+              disableBuiltInState
+              onPress={(isChecked: boolean) => {
+                this.setState({checkboxshot: !this.state.checkboxshot});
+              }}
+              textStyle={{fontSize: 18, color: '#000', fontWeight: 'bold'}}
+            />
+          </View>
+
           <View style={{marginTop: 20, paddingLeft: 25}}>
             <Text
               style={{
@@ -596,7 +981,12 @@ export default class EditItem extends Component {
               Add images
             </Text>
           </View>
-          <View style={{marginTop: 20, paddingLeft: 25, flexDirection: 'row'}}>
+          <View
+            style={{
+              marginTop: 20,
+              paddingLeft: 25,
+              flexDirection: 'row',
+            }}>
             <TouchableOpacity
               onPress={() => this.onOpenImage()}
               style={{
@@ -608,56 +998,21 @@ export default class EditItem extends Component {
               }}>
               <Feather name="plus" size={30} color="#6633FF" />
             </TouchableOpacity>
-            <ScrollView
-              horizontal={true}
-              contentContainerStyle={{
-                marginHorizontal: 20,
-              }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-around',
-                }}>
-                {this.state.imageflag === true ? (
-                  this.state.imagepath.map(image => {
-                    console.log('********', image);
-                    return (
-                      <View>
-                        <Image
-                          source={{
-                            uri: image.ProImage_ImagePath
-                              ? image.ProImage_ImagePath
-                              : null,
-                          }}
-                          // resizeMode="contain"
-                          style={{
-                            height: 100,
-                            width: 100,
-                            paddingLeft: 20,
-                          }}
-                        />
-                      </View>
-                    );
-                  })
-                ) : (
-                  <View>
-                    <Image
-                      source={{
-                        uri: this.state.getimagepath
-                          ? this.state.getimagepath
-                          : null,
-                      }}
-                      // resizeMode="contain"
-                      style={{
-                        height: 100,
-                        width: 100,
-                        paddingLeft: 20,
-                      }}
-                    />
-                  </View>
-                )}
-              </View>
-            </ScrollView>
+            <View style={{width: '50%'}}>
+              <SliderBox
+                images={this.state.imagepath}
+                sliderBoxHeight={90}
+                dotColor="#0F0B56"
+                inactiveDotColor="#90A4AE"
+                resizeMethod={'resize'}
+                // paginationBoxVerticalPadding={20}
+                resizeMode={'center'}
+                ImageComponentStyle={{
+                  width: '50%',
+                  marginRight: 200,
+                }}
+              />
+            </View>
           </View>
           <ActionSheet
             ref={o => (this.ActionSheet = o)}
@@ -678,21 +1033,16 @@ export default class EditItem extends Component {
               }
             }}
           />
-          <IncreDecre
-            onPressIncre={() => this.IncrementItem()}
-            onPressDecre={() => this.DecreaseItem()}
-            value={this.state.clicks}
-          />
-          <View style={{marginTop: 30, marginBottom: 30}}>
-            <Paragraph
-              label="Description"
-              onChangeText={description =>
-                this.setState({description: description})
-              }
-              text={this.state.description}
+          <View style={{marginTop: 50, marginBottom: 25}}>
+            <Button
+              text="Save"
+              backgroundColor="#6633FF"
+              onPress={() => {
+                this.editProduct();
+              }}
             />
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }

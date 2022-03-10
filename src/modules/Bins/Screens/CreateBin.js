@@ -16,6 +16,7 @@ import dynamicLinks from '@react-native-firebase/dynamic-links';
 import {ActionSheetCustom as ActionSheet} from 'react-native-actionsheet';
 import ImagePicker from 'react-native-image-crop-picker';
 import {FAB} from 'react-native-paper';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import HeaderBack from '../../../components/HeaderBack';
 import InputText from '../../../components/InputText';
 import Button from '../../../components/Button';
@@ -49,9 +50,13 @@ export default class CreateBin extends Component {
       imagepath: '',
       shelf: '',
       unit: '',
+      column: '',
       binid: null,
       qrimage: '',
+      qrimageforprint: '',
       userid: null,
+      newlocation: '',
+      qrcodeprint: '',
     };
   }
   componentDidMount() {
@@ -69,17 +74,17 @@ export default class CreateBin extends Component {
 
   generateLink = async () => {
     const link = await dynamicLinks().buildShortLink({
-      link: `https://cellsell.page.link/CreateUpdateBinMaster/${this.state.binid}`,
-      domainUriPrefix: 'https://cellsell.page.link',
+      link: `https://celsell.page.link/CreateUpdateBinMaster/${this.state.binid}`,
+      domainUriPrefix: 'https://celsell.page.link',
       // ios: {
       //   bundleId: "com.avigma.communv",
       //   appStoreId: "1579823021",
       //   fallbackUrl: "https://apps.apple.com/us/app/com.houseplant/id1535962213",
       // },
       android: {
-        packageName: 'com.cellsell',
+        packageName: 'com.celsell',
         fallbackUrl:
-          'https://play.google.com/store/apps/details?id=com.cellsell',
+          'https://play.google.com/store/apps/details?id=com.celsell',
       },
       navigation: {
         forcedRedirectEnabled: true,
@@ -92,7 +97,7 @@ export default class CreateBin extends Component {
   GetLocation = async () => {
     this.setState({loading: true});
     var data = JSON.stringify({
-      Type: 1,
+      Type: 3,
     });
     try {
       const res = await getlocation(data);
@@ -124,14 +129,8 @@ export default class CreateBin extends Component {
     if (this.state.location.length === 0) {
       cancel = true;
     }
-    if (this.state.shelf.length === 0) {
-      cancel = true;
-    }
-    if (this.state.unit.length === 0) {
-      cancel = true;
-    }
     if (cancel) {
-      this.showerrorMessage('Fields can not be empty');
+      this.showerrorMessage('Bin name and location required');
       return false;
     } else {
       return true;
@@ -152,37 +151,36 @@ export default class CreateBin extends Component {
   };
 
   CreateBins = async () => {
-    if (this.Validation() && this.ImageValidation()) {
-      console.log(
-        this.props.route.params.profile.User_PkeyID_Master,
-        'this.props.route.params.profile.User_PkeyID_Master',
-      );
+    if (this.Validation()) {
       this.setState({loading: false});
       let data = {
         Bin_Name: this.state.name,
-        Bin_Quantity: 1,
+        Bin_Quantity: 0,
         Bin_IsActive: 1,
         Bin_IsDelete: 0,
         Type: 1,
         Bin_PkeyID_Master: 1,
+        Bin_PkeyID: 0,
         Bin_PkeyID_Owner: this.props.route.params.profile.User_PkeyID,
-        Bin_Loc_ID: 1,
+        Bin_Loc_ID: this.state.location,
         Bin_Image_Path: this.state.imagepath,
         Bin_Unit: this.state.unit,
         Bin_Shelf: this.state.shelf,
+        Bin_Column: this.state.column,
         Loc_Name: this.state.location,
+        Bin_Loc_Name: this.state.newlocation,
       };
       console.log(data, 'daatatatat');
       try {
-        token = await AsyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem('token');
         const res = await createbin(data, token);
         console.log('ressssss:', res);
         this.setState({
           binid: res[0],
         });
         await this.generateLink();
-        this.showMessage('Bin Added');
         this.setState({loading: false}, () => this.GenerateCode());
+        this.showMessage('Bin Added');
       } catch (error) {
         this.showerrorMessage(error.response.data.error_description);
       }
@@ -195,9 +193,12 @@ export default class CreateBin extends Component {
       Bin_PkeyID: this.state.binid,
       Type: 5,
       Bin_QR_Path: this.state.qrimage,
+      Bin_QR_PrintPath: this.state.qrimageforprint,
+      Bin_QR_Data: this.state.qrcodeprint,
     };
+    console.log(data, 'Qr');
     try {
-      token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('token');
       const res = await updatebin(data, token);
       console.log('updateressssssBinnnnnnnn:', res);
       this.setState({loading: false});
@@ -210,55 +211,59 @@ export default class CreateBin extends Component {
   onOpenImage = () => this.ActionSheet.show();
 
   ImageGallery = async () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   ImageCamera = async () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? images.filename : 'images' + new Date(),
-            // imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              // imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   uploadImage = async () => {
@@ -334,8 +339,14 @@ export default class CreateBin extends Component {
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await uploadqrimage(data, token);
-      this.setState({qrimage: res[0].QRCodeImagePath, loading: false}, () =>
-        this.UpdateBin(),
+      this.setState(
+        {
+          qrimage: res[0].QRCodeImagePath,
+          qrimageforprint: res[1].QRCodeImagePath,
+          qrcodeprint: res[0].QRCodePrint,
+          loading: false,
+        },
+        () => this.UpdateBin(),
       );
       console.log(res, 'qrres');
     } catch (error) {
@@ -363,7 +374,7 @@ export default class CreateBin extends Component {
               : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg'
           }
         />
-        <ScrollView keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
           <View style={{marginTop: 50}}>
             <InputText
               label="Enter name of the bin"
@@ -398,6 +409,18 @@ export default class CreateBin extends Component {
               })}
             </Select>
           </View>
+          {this.state.location === -90 ? (
+            <View style={{marginTop: 20}}>
+              <InputText
+                label="Add Location"
+                onChangeText={newlocation =>
+                  this.setState({newlocation: newlocation})
+                }
+                value={this.state.newlocation}
+                placeholder="Enter new location"
+              />
+            </View>
+          ) : null}
           <View style={{marginTop: 20}}>
             <InputText
               label="Enter Unit"
@@ -413,6 +436,15 @@ export default class CreateBin extends Component {
               onChangeText={shelf => this.setState({shelf: shelf})}
               value={this.state.shelf}
               placeholder="Enter Shelf Number"
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={{marginTop: 20}}>
+            <InputText
+              label="Enter Column"
+              onChangeText={column => this.setState({column: column})}
+              value={this.state.column}
+              placeholder="Enter Column"
               keyboardType="numeric"
             />
           </View>
@@ -435,7 +467,7 @@ export default class CreateBin extends Component {
               }
             }}
           />
-          <View>
+          {/* <View>
             <FAB
               small
               icon="camera"
@@ -462,9 +494,9 @@ export default class CreateBin extends Component {
                 }}
               />
             </View>
-          </View>
+          </View> */}
 
-          <View style={{marginTop: 100}}>
+          <View style={{marginTop: 50}}>
             <Button
               text="Save"
               backgroundColor="#6633FF"
@@ -473,7 +505,7 @@ export default class CreateBin extends Component {
               }}
             />
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }

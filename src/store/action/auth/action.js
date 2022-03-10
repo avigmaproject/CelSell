@@ -22,8 +22,26 @@ export const restoreToken = token => {
   };
 };
 
-export const userId = userid => {
+export const setUserId = userid => {
   return dispatch => {
     dispatch({type: 'SET_USERID', userid: userid});
+  };
+};
+
+export const setBinId = binidata => {
+  return dispatch => {
+    dispatch({type: 'SET_BINID', binidata});
+  };
+};
+
+export const setProductId = productdata => {
+  return dispatch => {
+    dispatch({type: 'SET_PRODUCTID', productdata});
+  };
+};
+
+export const setImage = profileimage => {
+  return dispatch => {
+    dispatch({type: 'SET_IMAGE', profileimage});
   };
 };

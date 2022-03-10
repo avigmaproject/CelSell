@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import qs from 'qs';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+
 import Spinner from 'react-native-loading-spinner-overlay';
 import {useToast} from 'native-base';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -132,7 +134,7 @@ const Login = ({navigation}) => {
         backgroundColor: '#F3F2F4',
       }}>
       <Spinner visible={loading} />
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled">
         <View
           style={{
             alignItems: 'center',
@@ -157,7 +159,7 @@ const Login = ({navigation}) => {
             label="Email / Username"
             onChangeText={email => setEmail(email)}
             value={email}
-            placeholder="Enter your Emal ID / Username"
+            placeholder="Enter your Email ID / Username"
           />
         </View>
         <View style={{marginTop: 10}}>
@@ -186,10 +188,10 @@ const Login = ({navigation}) => {
         <View
           style={{
             marginTop: 10,
-            width: '32%',
+            // width: '32%',
             // borderWidth: 1,
             alignSelf: 'center',
-            left: 110,
+            left: 100,
           }}>
           <TouchableOpacity
             onPress={() => navigation.navigate('ForgotPassword')}>
@@ -236,7 +238,7 @@ const Login = ({navigation}) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

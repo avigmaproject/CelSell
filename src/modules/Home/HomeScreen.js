@@ -10,10 +10,14 @@ import {
   FlatList,
   Image,
   TextInput,
+  Animated,
+  Alert,
 } from 'react-native';
-import {Select} from 'native-base';
+import {Toast, Select} from 'native-base';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import {FAB} from 'react-native-paper';
 import Spinner from 'react-native-loading-spinner-overlay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,16 +29,17 @@ import {
   getbins,
   getprofiles,
   activeprofile,
+  updatebin,
+  getsearch,
 } from '../../services/api.function';
-import {userId} from '../../store/action/auth/action';
+import {setBinId, setImage} from '../../store/action/auth/action';
 import {connect} from 'react-redux';
 
 class HomeScreen extends Component {
   constructor() {
     super();
-
     this.state = {
-      data: [],
+      bin_data: [],
       profile: [],
       name: '',
       splitname: '',
@@ -51,13 +56,14 @@ class HomeScreen extends Component {
       profileid: '',
       activeid: null,
       userprofile: [],
+      searchData: [],
+      flag: false,
     };
   }
 
   componentDidMount() {
     this._unsubscribe = this.props.navigation.addListener('focus', () => {
       this.getToken();
-      // console.log(userId, 'this.props.userId()');
     });
   }
   componentWillUnmount() {
@@ -75,7 +81,6 @@ class HomeScreen extends Component {
     });
     try {
       const res = await getprofiles(data, token);
-      console.log(res, 'res[0][0].User_Name');
       this.setState({
         userprofile: res[0],
       });
@@ -91,17 +96,18 @@ class HomeScreen extends Component {
             },
             () => this.split_name(),
           );
+          const {binownerid} = this.state;
+          AsyncStorage.setItem('ownerid', binownerid.toString());
+
           if (
             res[0][i].User_Image_Path != null &&
             res[0][i].User_Image_Path != undefined
           ) {
             AsyncStorage.setItem('imagepath', res[0][i].User_Image_Path);
+            this.props.setImage(res[0][i].User_Image_Path);
           }
         }
       }
-      const {binownerid} = this.state;
-      console.log(binownerid, 'binowneridbinownerid');
-      AsyncStorage.setItem('ownerid', binownerid.toString());
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
       let message = '';
@@ -116,7 +122,7 @@ class HomeScreen extends Component {
     }
   };
 
-  GetBins = async token => {
+  GetBins = async () => {
     this.setState({
       loading: true,
     });
@@ -129,9 +135,9 @@ class HomeScreen extends Component {
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await getbins(data, token);
-      console.log(res, 'resBin');
+      // console.log(res, 'resBin');
       this.setState({
-        data: res[0],
+        bin_data: res[0],
         initial: res[0],
         loading: false,
       });
@@ -148,7 +154,7 @@ class HomeScreen extends Component {
     try {
       token = await AsyncStorage.getItem('token');
       if (token) {
-        console.log('minalll', token);
+        console.log('rishabh', token);
         // alert('first');
         this.GetProfile(token);
       } else {
@@ -159,30 +165,42 @@ class HomeScreen extends Component {
     }
   };
 
-  searchText = e => {
-    let text = e.toLowerCase();
-    let bins = this.state.data;
-    let filteredName = bins.filter(item => {
-      return item.Bin_Name.toLowerCase().match(text);
+  searchBin = e => {
+    this.setState({
+      initial: this.state.bin_data.filter(i =>
+        i.Bin_Name.toLowerCase().includes(e.toLowerCase()),
+      ),
     });
-    let initial = this.state.initial;
-    if (!text || text === '') {
-      this.setState({
-        data: initial,
-      });
-    } else if (!Array.isArray(filteredName) && !filteredName.length) {
-      this.setState({
-        noData: true,
-      });
-    } else if (Array.isArray(filteredName)) {
-      this.setState({
-        noData: false,
-        data: filteredName,
-      });
+  };
+
+  GetSearch = async e => {
+    var data = JSON.stringify({
+      Type: 1,
+      Dataval: e,
+    });
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const res = await getsearch(data, token);
+      console.log(res[0], 'resSearch');
+      this.setState({searchData: res[0]});
+      const {searchData} = this.state;
+      if (e !== '') {
+        this.setState({
+          flag: true,
+        });
+      } else {
+        this.setState({
+          flag: false,
+          searchData: [],
+        });
+      }
+    } catch (error) {
+      console.log('hihihihihihih', {e: error.response.data.error});
     }
   };
 
   renderdata = ({item}) => {
+    this.props.setBinId(item);
     return (
       <TouchableOpacity
         onPress={() => this.props.navigation.navigate('ShowBinData', {item})}>
@@ -200,23 +218,35 @@ class HomeScreen extends Component {
               width: 2,
             },
           }}>
-          <View style={{flexDirection: 'row'}}>
-            <Image
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              // justifyContent: 'center',
+            }}>
+            <View
               style={{
                 height: 70,
-                width: 70,
-                borderRadius: 1,
-                borderColor: '#BDBDBD',
-                borderWidth: 1,
-                left: 10,
-                top: 10,
-              }}
-              source={{
-                uri: item.Bin_Image_Path
-                  ? item.Bin_Image_Path
-                  : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg',
-              }}
-            />
+                width: '25%',
+                borderWidth: 0.5,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: 10,
+                marginLeft: 10,
+                borderColor: 'grey',
+              }}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 22,
+                  fontWeight: '700',
+                  lineHeight: 26,
+                  color: '#000000',
+                }}>
+                {item.Bin_QR_Data}
+              </Text>
+            </View>
+
             <View
               style={{
                 justifyContent: 'center',
@@ -243,6 +273,7 @@ class HomeScreen extends Component {
                 {item.Loc_Name}
               </Text>
             </View>
+
             <FAB
               style={{
                 backgroundColor: '#A792FF',
@@ -259,7 +290,7 @@ class HomeScreen extends Component {
               style={{
                 backgroundColor: '#A792FF',
                 position: 'absolute',
-                right: 75,
+                right: 70,
                 top: 25,
               }}
               icon="qrcode"
@@ -295,7 +326,6 @@ class HomeScreen extends Component {
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await activeprofile(data, token);
-      console.log(res, 'res');
       this.setState(
         {
           loading: false,
@@ -329,10 +359,8 @@ class HomeScreen extends Component {
           binownerid: res[0][0].User_PkeyID,
           loading: false,
         },
-        () => this.split_name(),
+        () => this.getToken(),
       );
-
-      console.log(res, 'ressssssss');
     } catch (error) {
       console.log('hihihihihihih', {e: error.response.data.error});
       let message = '';
@@ -347,11 +375,153 @@ class HomeScreen extends Component {
     }
   };
 
+  showMessage = message => {
+    if (message !== '' && message !== null && message !== undefined) {
+      Toast.show({
+        title: message,
+        placement: 'bottom',
+        status: 'success',
+        duration: 5000,
+        // backgroundColor: 'red.500',
+      });
+    }
+  };
+  rendersearchdata = ({item}) => {
+    return (
+      <TouchableOpacity
+        onPress={
+          item.stype === 1
+            ? () => this.props.navigation.navigate('ShowBinData', {item})
+            : () => this.props.navigation.navigate('ItemDetails', {item})
+        }
+        style={{
+          marginTop: 15,
+          height: 110,
+          backgroundColor: '#FFF',
+          borderRadius: 3,
+          shadowColor: 'grey',
+          shadowOpacity: 0.8,
+          shadowRadius: 2,
+          shadowOffset: {
+            height: 2,
+            width: 2,
+          },
+          width: '100%',
+        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            // justifyContent: 'center',
+          }}>
+          {item.stype === 1 ? (
+            <View
+              style={{
+                height: 70,
+                width: '25%',
+                borderWidth: 0.5,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: 10,
+                marginLeft: 10,
+                borderColor: 'grey',
+              }}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 22,
+                  fontWeight: '700',
+                  lineHeight: 26,
+                  color: '#000000',
+                }}>
+                {item.iqpath}
+              </Text>
+            </View>
+          ) : (
+            <Image
+              style={{
+                height: 90,
+                width: 90,
+                borderRadius: 1,
+                borderColor: '#BDBDBD',
+                borderWidth: 1,
+                left: 10,
+                top: 10,
+              }}
+              source={{
+                uri: item.iqpath
+                  ? item.iqpath
+                  : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg',
+              }}
+            />
+          )}
+
+          <View
+            style={{
+              justifyContent: 'center',
+              flexDirection: 'column',
+              paddingLeft: 25,
+              paddingTop: 10,
+              width: '70%',
+            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                lineHeight: 20,
+                color: '#0F0B56',
+              }}>
+              {item.pbName}
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: '600',
+                lineHeight: 20,
+                color: '#ACACAC',
+              }}>
+              {item.stype === 2 ? item.pbDesc : item.brandlocation}
+            </Text>
+          </View>
+          {item.stype === 1 ? (
+            <FAB
+              style={{
+                backgroundColor: '#A792FF',
+                position: 'absolute',
+                right: 20,
+                top: 25,
+              }}
+              icon="pencil"
+              color="#fff"
+              small
+              onPress={() => this.props.navigation.navigate('EditBin', {item})}
+            />
+          ) : null}
+
+          {item.stype === 1 ? (
+            <FAB
+              style={{
+                backgroundColor: '#A792FF',
+                position: 'absolute',
+                right: 70,
+                top: 25,
+              }}
+              icon="qrcode"
+              color="#fff"
+              small
+              onPress={() => this.props.navigation.navigate('QrCode', {item})}
+            />
+          ) : null}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   render() {
-    const {profile} = this.state;
+    const {profile, flag} = this.state;
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: '#F3F2F4'}}>
-        {/* <Spinner visible={this.state.loading} /> */}
+        <Spinner visible={this.state.loading} />
         <View
           style={{
             backgroundColor: '#fff',
@@ -396,7 +566,7 @@ class HomeScreen extends Component {
               </TouchableOpacity>
             </View>
             <View style={{flexDirection: 'row', paddingRight: 50}}>
-              <Text style={styles.heading}>Hi ! </Text>
+              <Text style={styles.heading}>Hi </Text>
               <Text style={styles.heading}>{this.state.splitname}</Text>
             </View>
 
@@ -450,7 +620,8 @@ class HomeScreen extends Component {
                 borderRadius: 6,
                 color: '#000000',
               }}
-              onChangeText={e => this.searchText(e)}
+              autoCapitalize="none"
+              onChangeText={e => this.GetSearch(e)}
               // value={number}
               placeholder="Your bins search here"
               placeholderTextColor="#ACACAC"
@@ -463,12 +634,23 @@ class HomeScreen extends Component {
           </View>
         </View>
 
-        <FlatList
-          data={this.state.data}
-          renderItem={item => this.renderdata(item)}
-          style={{marginTop: 5, marginBottom: 10}}
-        />
-        {this.state.data != '' ? (
+        {flag ? (
+          <FlatList
+            data={this.state.searchData}
+            renderItem={item => this.rendersearchdata(item)}
+            keyExtractor={item => item.PkeyID}
+            style={{marginTop: 5, marginBottom: 10}}
+          />
+        ) : (
+          <FlatList
+            data={this.state.bin_data}
+            renderItem={item => this.renderdata(item)}
+            keyExtractor={item => item.Bin_PkeyID}
+            style={{marginTop: 5, marginBottom: 10}}
+          />
+        )}
+
+        {this.state.bin_data != '' ? (
           <FAB
             style={{
               backgroundColor: '#0F0B56',
@@ -518,10 +700,30 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     lineHeight: 30,
   },
+  backRightBtn: {
+    alignItems: 'center',
+    bottom: 0,
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    width: 75,
+  },
+  backRightBtnLeft: {
+    backgroundColor: 'blue',
+    right: 75,
+  },
+  backRightBtnRight: {
+    backgroundColor: 'red',
+    right: 0,
+  },
+  backTextWhite: {
+    color: '#FFF',
+  },
 });
 
 const mapDispatchToProps = {
-  userId,
+  setBinId,
+  setImage,
 };
 const mapStateToProps = (state, ownProps) => ({
   // contacts: state.contactReducer.contacts,

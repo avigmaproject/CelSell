@@ -32,6 +32,7 @@ export default class SplashScreen extends Component {
 
   _getInitialUrl = async () => {
     const url = dynamicLinks().onLink(this.handleDynamicLink);
+    console.log(url, 'url');
     this.setState({
       linkdata: url,
     });
@@ -50,7 +51,6 @@ export default class SplashScreen extends Component {
   };
   handleDynamicLink = link => {
     if (link.url.includes('CreateUpdateBinMaster')) {
-      alert('hii');
       this.props.navigation.navigate('ShowBinData', {link: link.url});
     } else {
       this.props.navigation.navigate('ResetPassword', {link: link.url});

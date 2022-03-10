@@ -322,3 +322,78 @@ export const getsubcategorymaster = async (data, access_token) => {
       throw error;
     });
 };
+
+export const getvendormaster = async (data, access_token) => {
+  return axios(`${BASE_URL}${API.GET_VENDOR_MASTER_DATA}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + access_token,
+    },
+    data,
+  })
+    .then(response => response.data)
+    .catch(error => {
+      throw error;
+    });
+};
+
+export const getcolor = async (data, access_token) => {
+  return axios(`${BASE_URL}${API.GET_COLOR_DATA}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + access_token,
+    },
+    data,
+  })
+    .then(response => response.data)
+    .catch(error => {
+      throw error;
+    });
+};
+
+export const getsearch = async (data, access_token) => {
+  return axios(`${BASE_URL}${API.GET_SEARCH_DATA}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + access_token,
+    },
+    data,
+  })
+    .then(response => response.data)
+    .catch(error => {
+      throw error;
+    });
+};
+
+export const getpdf = async (data, access_token) => {
+  return axios(`${BASE_URL}${API.GET_PDF}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + access_token,
+    },
+    data,
+  })
+    .then(response => response.data)
+    .catch(error => {
+      throw error;
+    });
+};
+
+export const getcsv = async (data, access_token) => {
+  return axios(`${BASE_URL}${API.GET_CSV}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + access_token,
+    },
+    data,
+  })
+    .then(response => response.data)
+    .catch(error => {
+      throw error;
+    });
+};

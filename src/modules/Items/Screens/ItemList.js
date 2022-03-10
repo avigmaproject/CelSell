@@ -29,11 +29,13 @@ export const ItemList = ({navigation, route}) => {
     const unsubscribe = navigation.addListener('focus', () => {
       GetImage();
       getToken();
-      console.log(route.params.data[0], 'route.params.name');
-      const Bin = route.params.data[0].Bin_PkeyID;
-      AsyncStorage.setItem('BinID', Bin.toString());
-      setName(route.params.data[0].Bin_Name);
-      setBin(Bin);
+      if (route.params.item !== undefined) {
+        console.log(route.params.item, 'route.params.name');
+        const Bin = route.params.item.Bin_PkeyID;
+        AsyncStorage.setItem('BinID', Bin.toString());
+        setName(route.params.item.Bin_Name);
+        setBin(Bin);
+      }
     });
     return unsubscribe;
   }, [navigation]);
@@ -46,7 +48,7 @@ export const ItemList = ({navigation, route}) => {
     setLoading(true);
     var data = JSON.stringify({
       Pro_PkeyID: 1,
-      Pro_Bin_PkeyID: route.params.data[0].Bin_PkeyID,
+      Pro_Bin_PkeyID: route.params.item.Bin_PkeyID,
       User_PkeyID: 1,
       Type: 3,
     });
@@ -76,20 +78,10 @@ export const ItemList = ({navigation, route}) => {
     }
   };
 
-  const searchText = e => {
-    let text = e.toLowerCase();
-    let bins = data;
-    let filteredName = bins.filter(item => {
-      return item.Pro_Name.toLowerCase().match(text);
-    });
-    if (!text || text === '') {
-      setData(initial);
-    } else if (!Array.isArray(filteredName) && !filteredName.length) {
-      setNoData(true);
-    } else if (Array.isArray(filteredName)) {
-      setNoData(false);
-      setData(filteredName);
-    }
+  const searchItem = e => {
+    setInitial(
+      data.filter(i => i.Pro_Name.toLowerCase().includes(e.toLowerCase())),
+    );
   };
 
   const renderdata = ({item}) => {
@@ -99,7 +91,7 @@ export const ItemList = ({navigation, route}) => {
         <View
           style={{
             marginTop: 15,
-            height: 90,
+            height: 110,
             backgroundColor: '#FFF',
             borderRadius: 3,
             shadowColor: 'grey',
@@ -113,8 +105,8 @@ export const ItemList = ({navigation, route}) => {
           <View style={{flexDirection: 'row'}}>
             <Image
               style={{
-                height: 70,
-                width: 70,
+                height: 90,
+                width: 90,
                 borderRadius: 1,
                 borderColor: '#BDBDBD',
                 borderWidth: 1,
@@ -122,16 +114,19 @@ export const ItemList = ({navigation, route}) => {
                 top: 10,
               }}
               source={{
-                uri: item.ProImage_ImagePath,
+                uri: item.ProImage_ImagePath
+                  ? item.ProImage_ImagePath
+                  : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg',
               }}
             />
-            <View style={{paddingHorizontal: 40, paddingVertical: 5}}>
+            <View style={{paddingHorizontal: 25, paddingVertical: 5}}>
               <Text
                 style={{
                   color: '#0F0B56',
                   fontSize: 16,
                   lineHeight: 24,
                   fontWeight: '600',
+                  width: '60%',
                 }}>
                 {item.Pro_Name}
               </Text>
@@ -200,11 +195,11 @@ export const ItemList = ({navigation, route}) => {
             ? photo
             : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg'
         }
-        onChangeText={searchText}
+        onChangeText={e => searchItem(e)}
       />
 
       <FlatList
-        data={data}
+        data={initial}
         renderItem={renderdata}
         style={{marginTop: 5, marginBottom: 10}}
       />

@@ -63,55 +63,59 @@ export default class MyProfile extends Component {
   onOpenImage = () => this.ActionSheet.show();
 
   ImageGallery = async () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   ImageCamera = async () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      includeBase64: true,
-      multiple: false,
-      compressImageQuality: 0.5,
-    }).then(image => {
-      console.log(image);
-      if (image.data) {
-        this.setState(
-          {
-            base64: image.data,
-            filename:
-              Platform.OS === 'ios' ? image.filename : 'images' + new Date(),
-            imagepath: image.path,
-          },
-          () => {
-            this.uploadImage();
-          },
-        );
-      }
-    });
+    setTimeout(() => {
+      ImagePicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        multiple: false,
+        compressImageQuality: 0.5,
+      }).then(image => {
+        console.log(image);
+        if (image.data) {
+          this.setState(
+            {
+              base64: image.data,
+              filename:
+                Platform.OS === 'ios' ? image.filename : 'image' + new Date(),
+              imagepath: image.path,
+            },
+            () => {
+              this.uploadImage();
+            },
+          );
+        }
+      });
+    }, 700);
   };
 
   uploadImage = async () => {
@@ -192,15 +196,15 @@ export default class MyProfile extends Component {
         lvalue = 'NA';
         break;
       }
-      case 2: {
+      case 3: {
         lvalue = 'Other';
         break;
       }
-      case 1: {
+      case 2: {
         lvalue = 'Male';
         break;
       }
-      case 0: {
+      case 1: {
         lvalue = 'Female';
         break;
       }
@@ -258,7 +262,8 @@ export default class MyProfile extends Component {
                   : 'https://t4.ftcdn.net/jpg/03/32/59/65/360_F_332596535_lAdLhf6KzbW6PWXBWeIFTovTii1drkbT.jpg',
               }}
             />
-            <FAB
+
+            {/* <FAB
               small
               icon="camera"
               style={{
@@ -267,7 +272,7 @@ export default class MyProfile extends Component {
                 bottom: 10,
                 backgroundColor: '#ACACAC',
               }}
-            />
+            /> */}
           </TouchableOpacity>
         </View>
         <ActionSheet
@@ -308,7 +313,7 @@ export default class MyProfile extends Component {
             }}>
             <InputView text="Email Address" value={email} />
           </View>
-          <View
+          {/* <View
             style={{
               marginTop: 20,
             }}>
@@ -320,7 +325,7 @@ export default class MyProfile extends Component {
                   : 'NA'
               }
             />
-          </View>
+          </View> */}
           <View
             style={{
               marginTop: 20,

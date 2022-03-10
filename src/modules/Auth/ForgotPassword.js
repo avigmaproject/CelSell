@@ -40,17 +40,17 @@ export default class ForgotPassword extends Component {
   }
   generateLink = async () => {
     const link = await dynamicLinks().buildShortLink({
-      link: `https://cellsell.page.link/forgetpassword/${this.state.email}`,
-      domainUriPrefix: 'https://cellsell.page.link',
+      link: `https://celsell.page.link/forgetpassword/${this.state.email}`,
+      domainUriPrefix: 'https://celsell.page.link',
       // ios: {
       //   bundleId: "com.avigma.communv",
       //   appStoreId: "1579823021",
       //   fallbackUrl: "https://apps.apple.com/us/app/com.houseplant/id1535962213",
       // },
       android: {
-        packageName: 'com.cellsell',
+        packageName: 'com.celsell',
         fallbackUrl:
-          'https://play.google.com/store/apps/details?id=com.cellsell',
+          'https://play.google.com/store/apps/details?id=com.celsell',
       },
       navigation: {
         forcedRedirectEnabled: true,
